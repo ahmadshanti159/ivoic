@@ -5,10 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>وصل استلام - وزارة الداخلية</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <!-- استخدام مكتبة Instascan القوية والحديثة للمسح -->
-    <script src="https://rawgit.com/schmich/instascan-builds/master/instascan.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
             background-color: #e2e6e9;
             font-family: 'Segoe UI', 'Tahoma', 'Arial', sans-serif;
@@ -18,6 +22,7 @@
             justify-content: center;
             padding: 30px 20px;
         }
+
         .btn-container {
             width: 210mm;
             max-width: 100%;
@@ -41,9 +46,15 @@
             transition: all 0.2s;
             font-family: inherit;
         }
-        .btn-print { background-color: #2c7a4d; }
-        .btn-download:hover { background-color: #0f2c48; }
-        .btn-print:hover { background-color: #1e5a3a; }
+        .btn-print {
+            background-color: #2c7a4d;
+        }
+        .btn-download:hover {
+            background-color: #0f2c48;
+        }
+        .btn-print:hover {
+            background-color: #1e5a3a;
+        }
 
         .report-page {
             background: white;
@@ -56,7 +67,12 @@
             display: flex;
             flex-direction: column;
         }
-        .palestine-flag { width: 100%; height: 16px; display: flex; }
+
+        .palestine-flag {
+            width: 100%;
+            height: 16px;
+            display: flex;
+        }
         .flag-black { flex: 1; background-color: #000000; }
         .flag-white { flex: 1; background-color: #FFFFFF; }
         .flag-green { flex: 1; background-color: #149954; }
@@ -112,6 +128,7 @@
             display: flex;
             flex-direction: column;
         }
+
         .receipt-title {
             text-align: center;
             font-size: 22px;
@@ -119,6 +136,7 @@
             color: #1a3a5f;
             margin-bottom: 18px;
         }
+
         .receipt-text-editable {
             width: 100%;
             border: none;
@@ -154,6 +172,7 @@
         .devices-table th:nth-child(3), .devices-table td:nth-child(3) { width: 20%; }
         .devices-table th:nth-child(4), .devices-table td:nth-child(4) { width: 20%; }
         .devices-table th:nth-child(5), .devices-table td:nth-child(5) { width: 13%; }
+        
         .devices-table th { background-color: #eef2f7; font-weight: 700; color: #1e466e; font-size: 13px; }
         .devices-table td { background-color: #fff; }
         .devices-table td input {
@@ -240,85 +259,72 @@
             font-size: 11px;
         }
 
-        /* مودال الكاميرا الجديد */
+        /* مودال الكاميرا - تصميم حديث */
         .modal {
             display: none;
             position: fixed;
+            inset: 0;
+            background-color: rgba(0, 0, 0, 0.85);
             z-index: 2000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.95);
-            justify-content: center;
             align-items: center;
+            justify-content: center;
             direction: ltr;
         }
         .modal-content {
-            background: #1e2a36;
-            width: 92%;
-            max-width: 550px;
+            background: white;
             border-radius: 24px;
-            padding: 16px;
-            text-align: center;
+            padding: 20px;
+            width: 90%;
+            max-width: 500px;
+            margin: 0 16px;
         }
         .modal-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            color: white;
-            margin-bottom: 12px;
+            margin-bottom: 16px;
         }
-        .close-modal {
-            background: #dc3545;
+        .modal-header h3 {
+            font-size: 20px;
+            font-weight: bold;
+            color: #1e466e;
+        }
+        .modal-header button {
+            background: none;
             border: none;
-            color: white;
-            font-size: 18px;
-            border-radius: 30px;
-            width: 32px;
-            height: 32px;
+            font-size: 24px;
             cursor: pointer;
+            color: #666;
         }
-        #video-preview {
+        #qr-reader {
             width: 100%;
-            background: #000;
             border-radius: 16px;
             overflow: hidden;
+            background: #000;
             min-height: 300px;
         }
-        #video-preview video {
-            width: 100%;
-            height: auto;
-            border-radius: 16px;
-        }
-        .scan-message {
-            color: #ffd966;
-            margin-top: 10px;
-            font-size: 12px;
-        }
-        .camera-buttons {
+        .modal-buttons {
             display: flex;
-            gap: 10px;
-            justify-content: center;
-            margin-top: 12px;
+            gap: 12px;
+            margin-top: 16px;
         }
-        .camera-buttons button {
-            background: #2c7a4d;
-            border: none;
-            padding: 6px 12px;
-            color: white;
-            border-radius: 20px;
+        .modal-buttons button {
+            flex: 1;
+            padding: 12px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 500;
             cursor: pointer;
-            font-size: 12px;
+            border: none;
         }
-        .modal button.close-btn {
-            margin-top: 12px;
-            background: #6c757d;
-            border: none;
-            padding: 8px 18px;
+        .btn-switch {
+            background-color: #1e466e;
             color: white;
-            border-radius: 40px;
-            cursor: pointer;
+        }
+        .btn-cancel {
+            background-color: #e2e6e9;
+            color: #333;
+            border: 1px solid #ccc;
         }
 
         @media print {
@@ -395,28 +401,34 @@
     </div>
 </div>
 
+<!-- مودال الكاميرا - نسخة مطابقة لكود React مع تحويله لـ JS -->
 <div id="cameraModal" class="modal">
     <div class="modal-content">
-        <div class="modal-header"><span>مسح الرمز التسلسلي</span><button class="close-modal" id="closeModalBtn">✕</button></div>
-        <div id="video-preview"></div>
-        <div class="camera-buttons">
-            <button id="switchCameraBtn">🔄 تبديل الكاميرا</button>
+        <div class="modal-header">
+            <h3>مسح الباركود / QR</h3>
+            <button id="closeModalBtn">✕</button>
         </div>
-        <div class="scan-message" id="scanMessage">⏳ جاري تحميل الكاميرا... انتظر لحظة</div>
-        <button class="close-btn" id="cancelScanBtn">إلغاء</button>
+        <div id="qr-reader"></div>
+        <div class="modal-buttons">
+            <button id="switchCameraBtn" class="btn-switch">🔄 تبديل الكاميرا</button>
+            <button id="cancelScanBtn" class="btn-cancel">إلغاء</button>
+        </div>
     </div>
 </div>
 
 <script>
     (function() {
+        // ==================== البيانات الأساسية ====================
         const reportElement = document.getElementById('reportContainer');
         const tableBody = document.getElementById('tableBody');
         const addRowBtn = document.getElementById('addRowBtn');
         let currentActiveInput = null;
-        let scanner = null;
-        let currentCameraIndex = 0;
-        let cameras = [];
-        let activeScan = false;
+        
+        // متغيرات الكاميرا
+        let html5QrCode = null;
+        let currentCameraFacing = 'environment'; // 'environment' أو 'user'
+        let isScanning = false;
+        const qrRegionId = 'qr-reader';
 
         // تعيين التاريخ الحالي
         const topDateInput = document.getElementById('topDateInput');
@@ -464,7 +476,7 @@
             return { wrapper, input };
         }
 
-        // إضافة صف جديد
+        // إضافة صف جديد مع ترقيم تلقائي
         function addNewRow() {
             const newRow = document.createElement('tr');
             const tdUnit = document.createElement('td');
@@ -532,103 +544,111 @@
             }
         }
 
-        // دالة فتح الكاميرا باستخدام Instascan
+        // ==================== دوال الكاميرا (مستوحاة من كود React) ====================
+        async function startScanner() {
+            if (!html5QrCode) {
+                html5QrCode = new Html5Qrcode(qrRegionId);
+            }
+            
+            const config = {
+                fps: 10,
+                qrbox: { width: 280, height: 280 },
+                aspectRatio: 1.0
+            };
+            
+            try {
+                await html5QrCode.start(
+                    { facingMode: currentCameraFacing },
+                    config,
+                    (decodedText) => {
+                        if (currentActiveInput) {
+                            currentActiveInput.value = decodedText;
+                            syncValuesToAttributes();
+                            closeScannerModal();
+                        }
+                    },
+                    (errorMessage) => {
+                        // تجاهل أخطاء المسح المتكررة
+                    }
+                );
+                isScanning = true;
+            } catch (err) {
+                console.error('خطأ في بدء الكاميرا:', err);
+                alert('تعذر فتح الكاميرا. تأكد من منح الإذن.');
+                closeScannerModal();
+            }
+        }
+
+        async function switchCamera() {
+            if (!html5QrCode) return;
+            const newFacing = currentCameraFacing === 'environment' ? 'user' : 'environment';
+            currentCameraFacing = newFacing;
+            
+            try {
+                await html5QrCode.stop();
+                isScanning = false;
+                await startScanner();
+            } catch (err) {
+                console.error('فشل تبديل الكاميرا:', err);
+                alert('فشل تبديل الكاميرا');
+            }
+        }
+
         async function openScannerModal() {
             if (!currentActiveInput) return;
+            
             const modal = document.getElementById('cameraModal');
             modal.style.display = 'flex';
-            const videoPreview = document.getElementById('video-preview');
-            videoPreview.innerHTML = ''; // تنظيف
-            const msgDiv = document.getElementById('scanMessage');
-            msgDiv.innerHTML = "⏳ جاري تحميل الكاميرا... انتظر لحظة";
-
-            try {
-                // إيقاف أي مسح سابق
-                if (scanner && activeScan) {
-                    scanner.stop();
-                    activeScan = false;
-                }
-                
-                // إنشاء كائن المسح الجديد
-                scanner = new Instascan.Scanner({ video: videoPreview, mirror: false, backgroundScan: false });
-                
-                scanner.addListener('scan', function(content) {
-                    if (currentActiveInput) {
-                        currentActiveInput.value = content;
-                        syncValuesToAttributes();
-                        closeScannerModal();
-                        msgDiv.innerHTML = "✓ تم المسح بنجاح: " + content;
-                        setTimeout(() => {
-                            if (msgDiv && msgDiv.innerHTML.includes("✓")) msgDiv.innerHTML = "جاهز للمسح";
-                        }, 2000);
-                    }
-                });
-                
-                // الحصول على قائمة الكاميرات المتاحة
-                const camerasList = await Instascan.Camera.getCameras();
-                cameras = camerasList;
-                
-                if (cameras.length === 0) {
-                    msgDiv.innerHTML = "❌ لا توجد كاميرا متاحة. تأكد من وجود كاميرا متصلة ومنح الصلاحيات.";
-                    return;
-                }
-                
-                currentCameraIndex = 0;
-                // محاولة اختيار الكاميرا الخلفية إذا وجدت (حسب الاسم)
-                let backCameraIndex = cameras.findIndex(cam => cam.name.toLowerCase().includes('back') || cam.name.toLowerCase().includes('environment'));
-                if (backCameraIndex !== -1) currentCameraIndex = backCameraIndex;
-                
-                await scanner.start(cameras[currentCameraIndex]);
-                activeScan = true;
-                msgDiv.innerHTML = "✅ الكاميرا تعمل - وجه الكاميرا إلى الرمز التسلسلي (باركود أو QR)";
-                
-            } catch (err) {
-                console.error(err);
-                msgDiv.innerHTML = "❌ خطأ في تشغيل الكاميرا: " + (err.message || "تأكد من منح صلاحية الكاميرا");
-            }
-        }
-        
-        // تبديل الكاميرا
-        async function switchCamera() {
-            if (!scanner || !activeScan || cameras.length === 0) return;
-            currentCameraIndex = (currentCameraIndex + 1) % cameras.length;
-            try {
-                await scanner.stop();
-                await scanner.start(cameras[currentCameraIndex]);
-                document.getElementById('scanMessage').innerHTML = "✅ تم تبديل الكاميرا - وجه الكاميرا إلى الرمز";
-            } catch (err) {
-                document.getElementById('scanMessage').innerHTML = "❌ فشل تبديل الكاميرا";
-            }
-        }
-        
-        async function closeScannerModal() {
-            if (scanner && activeScan) {
+            
+            // تنظيف أي مسح سابق
+            if (html5QrCode && isScanning) {
                 try {
-                    scanner.stop();
+                    await html5QrCode.stop();
                 } catch(e) {}
-                activeScan = false;
+                isScanning = false;
+            }
+            
+            // إعادة تعيين عنصر الـ reader
+            const readerDiv = document.getElementById(qrRegionId);
+            if (readerDiv) readerDiv.innerHTML = '';
+            
+            // بدء المسح
+            await startScanner();
+        }
+
+        async function closeScannerModal() {
+            if (html5QrCode && isScanning) {
+                try {
+                    await html5QrCode.stop();
+                } catch(e) {}
+                isScanning = false;
             }
             const modal = document.getElementById('cameraModal');
             modal.style.display = 'none';
-            const videoPreview = document.getElementById('video-preview');
-            if (videoPreview) videoPreview.innerHTML = '';
             currentActiveInput = null;
-            scanner = null;
         }
 
         function bindModalEvents() {
             const closeBtn = document.getElementById('closeModalBtn');
             const cancelBtn = document.getElementById('cancelScanBtn');
             const switchBtn = document.getElementById('switchCameraBtn');
+            
             if (closeBtn) closeBtn.onclick = closeScannerModal;
             if (cancelBtn) cancelBtn.onclick = closeScannerModal;
-            if (switchBtn) switchBtn.onclick = switchCamera;
+            if (switchBtn) {
+                switchBtn.onclick = () => {
+                    switchCamera();
+                };
+            }
+            
+            // إغلاق عند النقر خارج المودال
             window.addEventListener('click', (e) => {
                 const modal = document.getElementById('cameraModal');
                 if (e.target === modal) closeScannerModal();
             });
         }
 
+        // ==================== دوال المزامنة والتصوير ====================
         function syncValuesToAttributes() {
             const allTableInputs = document.querySelectorAll('#devicesTable input');
             allTableInputs.forEach(inp => inp.setAttribute('value', inp.value));
@@ -704,6 +724,7 @@
             setTimeout(() => window.print(), 120);
         };
 
+        // ==================== ربط الأزرار ====================
         const saveBtn = document.getElementById('saveImageBtn');
         if (saveBtn) {
             const newSave = saveBtn.cloneNode(true);
@@ -768,6 +789,13 @@
         }
         
         syncValuesToAttributes();
+        
+        // تنظيف عند إغلاق الصفحة
+        window.addEventListener('beforeunload', () => {
+            if (html5QrCode && isScanning) {
+                html5QrCode.stop().catch(e=>{});
+            }
+        });
     })();
 </script>
 </body>
