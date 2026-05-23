@@ -1,838 +1,393 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>وصل استلام - وزارة الداخلية</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <!-- مكتبة Html5-QRCode -->
-    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+import React, { useState, useRef } from 'react';
+import html2canvas from 'html2canvas';
+import { Html5Qrcode } from 'html5-qrcode';
 
-        body {
-            background-color: #e2e6e9;
-            font-family: 'Segoe UI', 'Tahoma', 'Arial', sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 30px 20px;
-        }
+interface DeviceRow {
+  id: number;
+  count: number;
+  serial: string;
+  type: string;
+  nature: string;
+}
 
-        .btn-container {
-            width: 210mm;
-            max-width: 100%;
-            text-align: center;
-            margin-bottom: 20px;
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-        .btn-download, .btn-print {
-            background-color: #1e466e;
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            font-size: 16px;
-            font-weight: 600;
-            border-radius: 8px;
-            cursor: pointer;
-            box-shadow: 0 3px 8px rgba(0,0,0,0.2);
-            transition: all 0.2s;
-            font-family: inherit;
-        }
-        .btn-print {
-            background-color: #2c7a4d;
-        }
-        .btn-download:hover {
-            background-color: #0f2c48;
-        }
-        .btn-print:hover {
-            background-color: #1e5a3a;
-        }
+const App: React.FC = () => {
+  const today = '2026-05-24';
+  const [date, setDate] = useState(today);
+  const [receiptText, setReceiptText] = useState(
+    'استلمت أنا الموقع أدناه الأجهزة الواردة في الجدول التالي من إدارة الاتصالات وتكنولوجيا المعلومات :-'
+  );
+  const [rows, setRows] = useState<DeviceRow[]>([
+    { id: 1, count: 1, serial: '123123123', type: 'hp', nature: 'شاشة' }
+  ]);
+  const [recipientRank, setRecipientRank] = useState('');
+  const [recipientDept, setRecipientDept] = useState('');
+  const [recipientSignature, setRecipientSignature] = useState('');
 
-        .report-page {
-            background: white;
-            width: 210mm;
-            min-height: 297mm;
-            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
-            margin: 0 auto;
-            position: relative;
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
-        }
+  const [isScanning, setIsScanning] = useState(false);
+  const [currentScanRowId, setCurrentScanRowId] = useState<number | null>(null);
+  const [cameraFacing, setCameraFacing] = useState<'environment' | 'user'>('environment');
+  const html5QrCodeRef = useRef<Html5Qrcode | null>(null);
+  const receiptRef = useRef<HTMLDivElement>(null);
 
-        .palestine-flag {
-            width: 100%;
-            height: 16px;
-            display: flex;
-        }
-        .flag-black { flex: 1; background-color: #000000; }
-        .flag-white { flex: 1; background-color: #FFFFFF; }
-        .flag-green { flex: 1; background-color: #149954; }
-        .flag-red-stripe { flex: 1; background-color: #E4312B; }
+  const addRow = () => {
+    const newRow: DeviceRow = {
+      id: Date.now(),
+      count: 1,
+      serial: '',
+      type: '',
+      nature: ''
+    };
+    setRows([...rows, newRow]);
+  };
 
-        .gov-header {
-            width: 100%;
-            padding: 12px 25px 8px 25px;
-            border-bottom: 2px solid #1e466e;
-            background-color: #ffffff;
-            flex-shrink: 0;
-        }
-        .header-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 20px;
-            flex-wrap: wrap;
-        }
-        .header-right { text-align: right; flex: 1; }
-        .header-center { text-align: center; flex-shrink: 0; }
-        .header-left { text-align: left; flex: 1; }
-        .logo-img { width: 65px; height: auto; display: block; margin: 0 auto; }
-        .ministry-name { font-size: 16px; font-weight: 800; color: #1e466e; line-height: 1.4; }
-        .sub-title { font-size: 14px; font-weight: 600; color: #2c5282; margin-top: 2px; }
-        .dept-name { font-size: 13px; font-weight: 500; color: #1a3a5f; margin-top: 3px; }
-        .english-text { font-size: 12px; font-weight: 500; color: #4a627a; line-height: 1.3; direction: ltr; }
-        .separator-line { height: 2px; background: linear-gradient(90deg, #1e466e, #9bb7d4, #1e466e); margin-top: 8px; width: 100%; }
+  const deleteRow = (id: number) => {
+    if (rows.length === 1) return;
+    setRows(rows.filter(r => r.id !== id));
+  };
 
-        .date-under-header {
-            text-align: left;
-            padding: 6px 28px 0 28px;
-            font-size: 11px;
-            color: #4a627a;
-            background-color: white;
-        }
-        .date-under-header span { font-weight: 500; }
-        .date-under-header input {
-            border: none;
-            border-bottom: 1px dashed #9aaebf;
-            background: transparent;
-            font-size: 11px;
-            padding: 2px 4px;
-            width: 110px;
-            text-align: center;
-            color: #1e466e;
-        }
-        .date-under-header input:focus { border-bottom: 1px solid #1e466e; outline: none; }
+  const updateRow = (id: number, field: keyof DeviceRow, value: string | number) => {
+    setRows(rows.map(row => 
+      row.id === id ? { ...row, [field]: value } : row
+    ));
+  };
 
-        .report-content {
-            padding: 12px 28px 25px 28px;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-        }
+  const openScanner = (rowId: number) => {
+    setCurrentScanRowId(rowId);
+    setIsScanning(true);
+    setCameraFacing('environment');
+    
+    setTimeout(() => {
+      const qrRegionId = 'qr-reader';
+      html5QrCodeRef.current = new Html5Qrcode(qrRegionId);
+      
+      html5QrCodeRef.current.start(
+        { facingMode: cameraFacing },
+        { fps: 10, qrbox: { width: 250, height: 250 } },
+        (decodedText) => {
+          if (currentScanRowId !== null) {
+            updateRow(currentScanRowId, 'serial', decodedText);
+          }
+          closeScanner();
+        },
+        () => {}
+      ).catch(() => {
+        alert('تعذر فتح الكاميرا. تأكد من منح الإذن.');
+        closeScanner();
+      });
+    }, 100);
+  };
 
-        .receipt-title {
-            text-align: center;
-            font-size: 22px;
-            font-weight: 700;
-            color: #1a3a5f;
-            margin-bottom: 18px;
-        }
+  const switchCamera = async () => {
+    if (!html5QrCodeRef.current) return;
+    const newFacing = cameraFacing === 'environment' ? 'user' : 'environment';
+    setCameraFacing(newFacing);
+    
+    try {
+      await html5QrCodeRef.current.stop();
+      await html5QrCodeRef.current.start(
+        { facingMode: newFacing },
+        { fps: 10, qrbox: { width: 250, height: 250 } },
+        (decodedText) => {
+          if (currentScanRowId !== null) {
+            updateRow(currentScanRowId, 'serial', decodedText);
+          }
+          closeScanner();
+        },
+        () => {}
+      );
+    } catch (err) {
+      alert('فشل تبديل الكاميرا');
+    }
+  };
 
-        .receipt-text-editable {
-            width: 100%;
-            border: none;
-            border-bottom: 1px dashed #9aaebf;
-            background: transparent;
-            font-size: 15px;
-            padding: 6px 8px;
-            margin-bottom: 18px;
-            text-align: right;
-            color: #2c3e50;
-            resize: vertical;
-            line-height: 1.6;
-            direction: rtl;
-            font-family: inherit;
-        }
-        .receipt-text-editable:focus { border-bottom: 1px solid #1e466e; outline: none; }
+  const closeScanner = async () => {
+    if (html5QrCodeRef.current) {
+      try {
+        await html5QrCodeRef.current.stop();
+      } catch (e) {}
+      html5QrCodeRef.current = null;
+    }
+    setIsScanning(false);
+    setCurrentScanRowId(null);
+  };
 
-        .devices-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-            font-size: 14px;
-            table-layout: fixed;
-        }
-        .devices-table th, .devices-table td {
-            border: 1px solid #bdc3c7;
-            padding: 8px 6px;
-            text-align: center;
-            vertical-align: middle;
-        }
-        .devices-table th:nth-child(1), .devices-table td:nth-child(1) { width: 12%; }
-        .devices-table th:nth-child(2), .devices-table td:nth-child(2) { width: 35%; }
-        .devices-table th:nth-child(3), .devices-table td:nth-child(3) { width: 20%; }
-        .devices-table th:nth-child(4), .devices-table td:nth-child(4) { width: 20%; }
-        .devices-table th:nth-child(5), .devices-table td:nth-child(5) { width: 13%; }
-        
-        .devices-table th { background-color: #eef2f7; font-weight: 700; color: #1e466e; font-size: 13px; }
-        .devices-table td { background-color: #fff; }
-        .devices-table td input {
-            width: 100%;
-            border: none;
-            padding: 6px 4px;
-            font-size: 13px;
-            text-align: center;
-            background: transparent;
-            outline: none;
-            font-family: inherit;
-        }
-        .serial-wrapper {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            direction: ltr;
-            width: 100%;
-        }
-        .serial-wrapper input { flex: 1; min-width: 0; border: none; }
-        .barcode-btn {
-            background: #eef2f7;
-            border: none;
-            cursor: pointer;
-            font-size: 18px;
-            border-radius: 6px;
-            width: 30px;
-            height: 30px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            transition: 0.2s;
-        }
-        .barcode-btn:hover { background-color: #d4dfec; }
-        .add-row-btn {
-            background-color: #1e466e;
-            color: white;
-            border: none;
-            padding: 5px 14px;
-            font-size: 12px;
-            border-radius: 6px;
-            cursor: pointer;
-            margin-bottom: 12px;
-            display: inline-block;
-        }
-        .btn-wrapper { text-align: left; margin-bottom: 8px; }
+  const saveAsImage = async () => {
+    if (!receiptRef.current) return;
+    
+    const canvas = await html2canvas(receiptRef.current, {
+      scale: 2,
+      backgroundColor: '#ffffff'
+    });
+    
+    const link = document.createElement('a');
+    link.download = `وصل-استلام-${date}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  };
 
-        .receiver-section {
-            width: 100%;
-            max-width: 360px;
-            margin-top: 6px;
-            border-top: 1px solid #ccd7e4;
-            padding-top: 8px;
-        }
-        .signature-line {
-            display: flex;
-            align-items: baseline;
-            gap: 5px;
-            margin-bottom: 4px;
-            flex-wrap: wrap;
-        }
-        .signature-line label { font-weight: 700; font-size: 11px; color: #1e3a5f; min-width: 72px; }
-        .signature-line input {
-            flex: 1;
-            border: none;
-            border-bottom: 1px solid #9aaebf;
-            padding: 3px;
-            font-size: 11px;
-        }
-        .signature-field {
-            margin-top: 4px;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        .signature-field label { font-weight: 700; font-size: 11px; color: #1e3a5f; min-width: 58px; }
-        .signature-field input {
-            flex: 1;
-            border: none;
-            border-bottom: 1px solid #9aaebf;
-            padding: 3px;
-            font-size: 11px;
-        }
+  const printDocument = () => {
+    window.print();
+  };
 
-        /* مودال الكاميرا */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 2000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.95);
-            justify-content: center;
-            align-items: center;
-            direction: ltr;
-        }
-        .modal-content {
-            background: #1e2a36;
-            width: 92%;
-            max-width: 550px;
-            border-radius: 24px;
-            padding: 16px;
-            text-align: center;
-        }
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            color: white;
-            margin-bottom: 12px;
-        }
-        .close-modal {
-            background: #dc3545;
-            border: none;
-            color: white;
-            font-size: 18px;
-            border-radius: 30px;
-            width: 32px;
-            height: 32px;
-            cursor: pointer;
-        }
-        #qr-reader {
-            width: 100%;
-            background: #000;
-            border-radius: 16px;
-            overflow: hidden;
-            min-height: 300px;
-        }
-        .scan-message {
-            color: #ffd966;
-            margin-top: 10px;
-            font-size: 12px;
-        }
-        .camera-buttons {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            margin-top: 12px;
-        }
-        .camera-buttons button {
-            background: #2c7a4d;
-            border: none;
-            padding: 6px 12px;
-            color: white;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 12px;
-        }
-        .modal button.close-btn {
-            margin-top: 12px;
-            background: #6c757d;
-            border: none;
-            padding: 8px 18px;
-            color: white;
-            border-radius: 40px;
-            cursor: pointer;
-        }
+  return (
+    <div className="min-h-screen bg-gray-200 py-8 px-4 font-sans" dir="rtl">
+      {/* Control Buttons */}
+      <div className="max-w-[210mm] mx-auto mb-6 flex gap-4 justify-center print:hidden">
+        <button
+          onClick={saveAsImage}
+          className="bg-[#1e3a5f] hover:bg-[#2a4a6f] text-white px-8 py-3 rounded-lg font-medium flex items-center gap-2 shadow-lg transition"
+        >
+          📷 حفظ كصورة
+        </button>
+        <button
+          onClick={printDocument}
+          className="bg-[#2d5f3f] hover:bg-[#3d7f5f] text-white px-8 py-3 rounded-lg font-medium flex items-center gap-2 shadow-lg transition"
+        >
+          🖨️ طباعة التقرير
+        </button>
+      </div>
 
-        @media print {
-            .btn-container, .add-row-btn, .btn-wrapper, .barcode-btn, .modal { display: none !important; }
-            body { background: white; padding: 0; }
-            @page { size: A4; margin: 0mm; }
-            .report-page { width: 100%; min-height: 297mm; box-shadow: none; }
-            .devices-table th, .devices-table td { border: 1px solid #000 !important; }
-            .receiver-section { max-width: 360px; }
-            .receipt-text-editable { border-bottom: none !important; resize: none !important; }
-            .palestine-flag { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            .date-under-header input { border-bottom: none !important; }
-        }
-        @media (max-width: 220mm) and (not print) {
-            .report-page, .btn-container { width: 100%; }
-            .receiver-section { max-width: 100%; }
-            .devices-table { table-layout: auto; }
-        }
-    </style>
-</head>
-<body>
-
-<div class="btn-container">
-    <button class="btn-download" id="saveImageBtn">📸 حفظ كصورة</button>
-    <button class="btn-print" id="printBtn">🖨️ طباعة التقرير</button>
-</div>
-
-<div class="report-page" id="reportContainer">
-    <div class="palestine-flag">
-        <div class="flag-black"></div><div class="flag-white"></div><div class="flag-green"></div><div class="flag-red-stripe"></div>
-    </div>
-    <div class="gov-header">
-        <div class="header-container">
-            <div class="header-right">
-                <div class="ministry-name">دولة فلسطين</div>
-                <div class="sub-title">وزارة الداخلية</div>
-                <div class="dept-name">المديرية العامة للشرطة</div>
-                <div class="dept-name">إدارة الاتصالات وتكنولوجيا المعلومات</div>
-            </div>
-            <div class="header-center">
-                <img class="logo-img" src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/db/Coat_of_arms_of_the_Palestinian_National_Authority.svg/500px-Coat_of_arms_of_the_Palestinian_National_Authority.svg.png" alt="شعار فلسطين" onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'%3E%3Ccircle cx=\'50\' cy=\'50\' r=\'45\' fill=\'%231e466e\'/%3E%3Cpolygon points=\'50,20 65,55 80,55 68,70 73,90 50,75 27,90 32,70 20,55 35,55\' fill=\'%23D4AF37\'/%3E%3C/svg%3E';">
-            </div>
-            <div class="header-left">
-                <div class="english-text">State of Palestine</div>
-                <div class="english-text">Ministry of Interior</div>
-                <div class="english-text">General Police Directorate</div>
-                <div class="english-text">ICT Department</div>
-            </div>
+      {/* Receipt Document */}
+      <div 
+        ref={receiptRef}
+        className="max-w-[210mm] mx-auto bg-white shadow-2xl p-8 print:shadow-none"
+        style={{ minHeight: '297mm' }}
+      >
+        {/* Palestinian Flag Bar */}
+        <div className="h-3 flex mb-6 -mx-8 -mt-8">
+          <div className="w-[25%] bg-[#CE1126]"></div>
+          <div className="w-[25%] bg-white"></div>
+          <div className="w-[25%] bg-[#007A3D]"></div>
+          <div className="w-[25%] bg-black"></div>
         </div>
-        <div class="separator-line"></div>
-    </div>
-    <div class="date-under-header"><span>التاريخ: </span><input type="text" id="topDateInput" placeholder="yyyy-mm-dd" value=""></div>
-    <div class="report-content">
-        <div class="receipt-title">وصل استلام</div>
-        <textarea id="fullReceiptText" class="receipt-text-editable" rows="2">استلمت أنا الموقع أدناه الأجهزة الواردة في الجدول التالي من إدارة الاتصالات وتكنولوجيا المعلومات :-</textarea>
-        <div class="btn-wrapper"><button type="button" class="add-row-btn" id="addRowBtn">+ إضافة جهاز</button></div>
-        <table class="devices-table" id="devicesTable">
-            <thead><tr><th>العدد</th><th>الرقم التسلسلي <span style="font-size:10px;">(📷 مسح)</span></th><th>نوع الجهاز</th><th>طبيعة الجهاز</th><th>#</th></tr></thead>
-            <tbody id="tableBody">
-                <tr>
-                    <td><input type="text" class="unit-input" value="1" placeholder="العدد"></td>
-                    <td class="serial-cell"><div class="serial-wrapper"><input type="text" class="serial-input" value="123123123" placeholder="الرقم التسلسلي"><button type="button" class="barcode-btn" title="مسح الرمز التسلسلي">📷</button></div></td>
-                    <td><input type="text" class="type-input" value="hp" placeholder="نوع الجهاز"></td>
-                    <td><input type="text" class="nature-input" value="شاشة" placeholder="طبيعة الجهاز"></td>
-                    <td><input type="text" class="num-input" value="1" placeholder="#"></td>
-                </tr>
-            </tbody>
+
+        {/* Official Header */}
+        <div className="flex justify-between items-start mb-4 border-b-2 border-[#1e3a5f] pb-4">
+          {/* English Text - Left */}
+          <div className="text-left text-xs text-gray-600 leading-relaxed">
+            <div className="font-semibold">State of Palestine</div>
+            <div>Ministry of Interior</div>
+            <div>General Police Directorate</div>
+            <div>ICT Department</div>
+          </div>
+          
+          {/* Logo - Center */}
+          <div className="flex-shrink-0 mx-4">
+            <svg viewBox="0 0 100 120" className="h-20 w-auto">
+              <defs>
+                <linearGradient id="flagGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" style={{stopColor: '#007A3D'}} />
+                  <stop offset="50%" style={{stopColor: '#CE1126'}} />
+                  <stop offset="100%" style={{stopColor: '#000'}} />
+                </linearGradient>
+              </defs>
+              <path d="M50 10 L70 30 L65 80 L35 80 L30 30 Z" fill="#333" />
+              <path d="M20 40 L50 20 L80 40 L75 90 L25 90 Z" fill="url(#flagGrad)" opacity="0.8" />
+              <circle cx="50" cy="50" r="15" fill="white" />
+              <path d="M50 35 L55 45 L65 45 L57 52 L60 62 L50 55 L40 62 L43 52 L35 45 L45 45 Z" fill="#007A3D" />
+            </svg>
+          </div>
+          
+          {/* Arabic Text - Right */}
+          <div className="text-right text-sm font-bold text-[#1e3a5f] leading-relaxed">
+            <div className="text-lg">دولة فلسطين</div>
+            <div>وزارة الداخلية</div>
+            <div>المديرية العامة للشرطة</div>
+            <div className="text-xs font-normal">إدارة الاتصالات وتكنولوجيا المعلومات</div>
+          </div>
+        </div>
+
+        {/* Date */}
+        <div className="flex justify-start mb-6 text-sm">
+          <div className="flex items-center gap-2">
+            <span className="text-gray-600">التاريخ:</span>
+            <input
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              className="border-b border-dotted border-gray-400 px-2 py-1 text-sm focus:outline-none focus:border-[#007A3D] print:border-none"
+            />
+          </div>
+        </div>
+
+        {/* Title */}
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold text-[#1e3a5f]">وصل استلام</h1>
+        </div>
+
+        {/* Receipt Text */}
+        <div className="mb-6 text-center">
+          <textarea
+            value={receiptText}
+            onChange={(e) => setReceiptText(e.target.value)}
+            className="w-full border-none text-center text-lg leading-relaxed resize-none focus:outline-none bg-transparent"
+            rows={2}
+          />
+        </div>
+
+        {/* Dotted Separator */}
+        <div className="border-t border-dotted border-gray-400 my-6"></div>
+
+        {/* Add Device Button */}
+        <div className="mb-4 print:hidden">
+          <button
+            onClick={addRow}
+            className="bg-[#1e3a5f] hover:bg-[#2a4a6f] text-white px-4 py-2 rounded-lg text-sm font-medium transition"
+          >
+            + إضافة جهاز
+          </button>
+        </div>
+
+        {/* Devices Table */}
+        <table className="w-full border-collapse border border-gray-300 text-sm mb-8 bg-[#f8fafc]">
+          <thead>
+            <tr className="bg-[#e8f0f8]">
+              <th className="border border-gray-300 px-3 py-3 w-12 font-bold text-[#1e3a5f]">#</th>
+              <th className="border border-gray-300 px-3 py-3 font-bold text-[#1e3a5f]">طبيعة الجهاز</th>
+              <th className="border border-gray-300 px-3 py-3 font-bold text-[#1e3a5f]">نوع الجهاز</th>
+              <th className="border border-gray-300 px-3 py-3 font-bold text-[#1e3a5f]">الرقم التسلسلي  (مسح)</th>
+              <th className="border border-gray-300 px-3 py-3 w-16 font-bold text-[#1e3a5f]">العدد</th>
+              <th className="border border-gray-300 px-2 py-3 w-10 print:hidden"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row, index) => (
+              <tr key={row.id} className="hover:bg-white">
+                <td className="border border-gray-300 text-center py-3 font-medium">{index + 1}</td>
+                <td className="border border-gray-300 p-2">
+                  <input
+                    type="text"
+                    value={row.nature}
+                    onChange={(e) => updateRow(row.id, 'nature', e.target.value)}
+                    className="w-full text-center border-none focus:outline-none py-1 print:p-0"
+                  />
+                </td>
+                <td className="border border-gray-300 p-2">
+                  <input
+                    type="text"
+                    value={row.type}
+                    onChange={(e) => updateRow(row.id, 'type', e.target.value)}
+                    className="w-full text-center border-none focus:outline-none py-1 print:p-0"
+                  />
+                </td>
+                <td className="border border-gray-300 p-2">
+                  <div className="flex items-center justify-center gap-2">
+                    <input
+                      type="text"
+                      value={row.serial}
+                      onChange={(e) => updateRow(row.id, 'serial', e.target.value)}
+                      className="flex-1 text-center border-none focus:outline-none py-1 print:p-0"
+                    />
+                    <button
+                      onClick={() => openScanner(row.id)}
+                      className="text-xl print:hidden hover:scale-110 transition"
+                      title="مسح الباركود"
+                    >
+                      📷
+                    </button>
+                  </div>
+                </td>
+                <td className="border border-gray-300 p-2">
+                  <input
+                    type="number"
+                    value={row.count}
+                    onChange={(e) => updateRow(row.id, 'count', parseInt(e.target.value) || 1)}
+                    className="w-full text-center border-none focus:outline-none py-1 print:p-0"
+                  />
+                </td>
+                <td className="border border-gray-300 text-center print:hidden">
+                  <button
+                    onClick={() => deleteRow(row.id)}
+                    className="text-red-500 hover:text-red-700 text-lg"
+                    disabled={rows.length === 1}
+                  >
+                    ✕
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
         </table>
-        <div class="receiver-section">
-            <div class="signature-line"><label>رتبة واسم المستلم :</label><input type="text" id="receiverName" placeholder="الرتبة / الاسم الكامل"></div>
-            <div class="signature-line"><label>الإدارة :</label><input type="text" id="receiverDept" placeholder="الإدارة التابع لها"></div>
-            <div class="signature-field"><label>التوقيع :</label><input type="text" id="receiverSignature" placeholder="التوقيع أو اسم الموقع"></div>
+
+        {/* Recipient Information */}
+        <div className="mt-12 space-y-4 text-sm">
+          <div className="flex items-center">
+            <span className="text-gray-600 ml-2 whitespace-nowrap">رتبة واسم المستلم :</span>
+            <input
+              type="text"
+              value={recipientRank}
+              onChange={(e) => setRecipientRank(e.target.value)}
+              className="flex-1 border-b border-dotted border-gray-400 pb-1 focus:outline-none focus:border-[#007A3D] print:border-none"
+              placeholder="الرتبة / الاسم الكامل"
+            />
+          </div>
+          <div className="flex items-center">
+            <span className="text-gray-600 ml-2 whitespace-nowrap">الإدارة :</span>
+            <input
+              type="text"
+              value={recipientDept}
+              onChange={(e) => setRecipientDept(e.target.value)}
+              className="flex-1 border-b border-dotted border-gray-400 pb-1 focus:outline-none focus:border-[#007A3D] print:border-none"
+              placeholder="الإدارة التابع لها"
+            />
+          </div>
+          <div className="flex items-center">
+            <span className="text-gray-600 ml-2 whitespace-nowrap">التوقيع :</span>
+            <input
+              type="text"
+              value={recipientSignature}
+              onChange={(e) => setRecipientSignature(e.target.value)}
+              className="flex-1 border-b border-dotted border-gray-400 pb-1 focus:outline-none focus:border-[#007A3D] print:border-none"
+              placeholder="التوقيع أو اسم الموقع"
+            />
+          </div>
         </div>
-    </div>
-</div>
 
-<div id="cameraModal" class="modal">
-    <div class="modal-content">
-        <div class="modal-header"><span>مسح الرمز التسلسلي</span><button class="close-modal" id="closeModalBtn">✕</button></div>
-        <div id="qr-reader"></div>
-        <div class="camera-buttons">
-            <button id="switchCameraBtn">🔄 تبديل الكاميرا</button>
+        {/* Footer */}
+        <div className="mt-16 text-center text-xs text-gray-500">
+          إدارة الاتصالات وتكنولوجيا المعلومات • وزارة الداخلية الفلسطينية
         </div>
-        <div class="scan-message" id="scanMessage">توجيه الكاميرا إلى الرمز التسلسلي (باركود أو QR)</div>
-        <button class="close-btn" id="cancelScanBtn">إلغاء</button>
+      </div>
+
+      {/* QR Scanner Modal */}
+      {isScanning && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 print:hidden">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-md mx-4">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="font-bold text-xl">مسح الباركود / QR</h3>
+              <button onClick={closeScanner} className="text-2xl">✕</button>
+            </div>
+            
+            <div id="qr-reader" className="w-full rounded-xl overflow-hidden bg-black"></div>
+            
+            <div className="flex gap-3 mt-4">
+              <button
+                onClick={switchCamera}
+                className="flex-1 py-3 bg-gray-800 text-white rounded-xl font-medium"
+              >
+                🔄 تبديل الكاميرا
+              </button>
+              <button
+                onClick={closeScanner}
+                className="flex-1 py-3 border border-gray-300 rounded-xl font-medium"
+              >
+                إلغاء
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <style>{`
+        @media print {
+          body { background: white; }
+          .print\\:hidden { display: none !important; }
+          input { border: none !important; background: transparent; }
+          textarea { border: none !important; }
+        }
+      `}</style>
     </div>
-</div>
+  );
+};
 
-<script>
-    (function() {
-        const reportElement = document.getElementById('reportContainer');
-        const tableBody = document.getElementById('tableBody');
-        const addRowBtn = document.getElementById('addRowBtn');
-        let currentActiveInput = null;
-        let html5QrCode = null;
-        let isScanning = false;
-        let currentCameraId = "environment"; // 'environment' للخلفية، 'user' للأمامية
-
-        // تعيين التاريخ الحالي
-        const topDateInput = document.getElementById('topDateInput');
-        if (topDateInput) {
-            const today = new Date();
-            const yyyy = today.getFullYear();
-            const mm = String(today.getMonth() + 1).padStart(2, '0');
-            const dd = String(today.getDate()).padStart(2, '0');
-            topDateInput.value = `${yyyy}-${mm}-${dd}`;
-        }
-
-        function getNextNumber() {
-            const allNumInputs = document.querySelectorAll('#tableBody .num-input');
-            let maxNum = 0;
-            allNumInputs.forEach(inp => {
-                let val = parseInt(inp.value, 10);
-                if (!isNaN(val) && val > maxNum) maxNum = val;
-            });
-            return maxNum + 1;
-        }
-
-        function createSerialCellWithScanner(currentValue = '') {
-            const wrapper = document.createElement('div');
-            wrapper.className = 'serial-wrapper';
-            const input = document.createElement('input');
-            input.type = 'text';
-            input.className = 'serial-input';
-            input.placeholder = 'الرقم التسلسلي';
-            input.value = currentValue;
-            const btn = document.createElement('button');
-            btn.type = 'button';
-            btn.className = 'barcode-btn';
-            btn.innerHTML = '📷';
-            btn.title = 'مسح الرمز التسلسلي';
-            btn.addEventListener('click', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                currentActiveInput = input;
-                openScannerModal();
-            });
-            wrapper.appendChild(input);
-            wrapper.appendChild(btn);
-            return { wrapper, input };
-        }
-
-        function addNewRow() {
-            const newRow = document.createElement('tr');
-            const tdUnit = document.createElement('td');
-            const unitInput = document.createElement('input');
-            unitInput.type = 'text';
-            unitInput.className = 'unit-input';
-            unitInput.placeholder = 'العدد';
-            tdUnit.appendChild(unitInput);
-            
-            const tdSerial = document.createElement('td');
-            const { wrapper, input: serialInput } = createSerialCellWithScanner('');
-            tdSerial.appendChild(wrapper);
-            
-            const tdType = document.createElement('td');
-            const typeInput = document.createElement('input');
-            typeInput.className = 'type-input';
-            typeInput.placeholder = 'نوع الجهاز';
-            tdType.appendChild(typeInput);
-            
-            const tdNature = document.createElement('td');
-            const natureInput = document.createElement('input');
-            natureInput.className = 'nature-input';
-            natureInput.placeholder = 'طبيعة الجهاز';
-            tdNature.appendChild(natureInput);
-            
-            const tdNum = document.createElement('td');
-            const numInput = document.createElement('input');
-            numInput.className = 'num-input';
-            numInput.placeholder = '#';
-            numInput.value = getNextNumber().toString();
-            tdNum.appendChild(numInput);
-            
-            newRow.appendChild(tdUnit);
-            newRow.appendChild(tdSerial);
-            newRow.appendChild(tdType);
-            newRow.appendChild(tdNature);
-            newRow.appendChild(tdNum);
-            tableBody.appendChild(newRow);
-            attachInputListeners(newRow);
-            syncValuesToAttributes();
-        }
-
-        function attachInputListeners(row) {
-            const inputs = row.querySelectorAll('input');
-            inputs.forEach(inp => {
-                inp.addEventListener('change', syncValuesToAttributes);
-                inp.addEventListener('keyup', syncValuesToAttributes);
-            });
-            const btns = row.querySelectorAll('.barcode-btn');
-            btns.forEach(btn => {
-                btn.removeEventListener('click', handleBarcodeClick);
-                btn.addEventListener('click', handleBarcodeClick);
-            });
-        }
-        
-        function handleBarcodeClick(e) {
-            e.preventDefault();
-            const wrapper = e.currentTarget.closest('.serial-wrapper');
-            if (wrapper) {
-                const serialInput = wrapper.querySelector('.serial-input');
-                if (serialInput) {
-                    currentActiveInput = serialInput;
-                    openScannerModal();
-                }
-            }
-        }
-
-        // فتح الكاميرا
-        async function openScannerModal() {
-            if (!currentActiveInput) return;
-            const modal = document.getElementById('cameraModal');
-            modal.style.display = 'flex';
-            
-            // إيقاف أي مسح سابق
-            if (html5QrCode && isScanning) {
-                try {
-                    await html5QrCode.stop();
-                } catch(e) {}
-                isScanning = false;
-            }
-            
-            const readerDiv = document.getElementById('qr-reader');
-            readerDiv.innerHTML = '';
-            
-            html5QrCode = new Html5Qrcode("qr-reader");
-            const config = {
-                fps: 15,
-                qrbox: { width: 280, height: 280 },
-                aspectRatio: 1.0,
-                showTorchButtonIfSupported: true
-            };
-            
-            try {
-                // محاولة استخدام الكاميرا الخلفية أولاً
-                await html5QrCode.start(
-                    { facingMode: currentCameraId === "environment" ? "environment" : "user" },
-                    config,
-                    (decodedText) => {
-                        if (currentActiveInput) {
-                            currentActiveInput.value = decodedText;
-                            syncValuesToAttributes();
-                            closeScannerModal();
-                            const msgDiv = document.getElementById('scanMessage');
-                            msgDiv.innerText = "✓ تم المسح بنجاح: " + decodedText;
-                            setTimeout(() => {
-                                if (msgDiv) msgDiv.innerText = "توجيه الكاميرا إلى الرمز التسلسلي";
-                            }, 2000);
-                        }
-                    },
-                    (errorMessage) => {
-                        // تجاهل أخطاء المسح المتكررة
-                    }
-                );
-                isScanning = true;
-                document.getElementById('scanMessage').innerText = "الكاميرا تعمل - وجه الكاميرا إلى الرمز التسلسلي";
-            } catch (err) {
-                console.error("خطأ في تشغيل الكاميرا:", err);
-                document.getElementById('scanMessage').innerHTML = "⚠️ تعذر الوصول إلى الكاميرا.<br>تأكد من منح صلاحية الكاميرا للموقع.";
-                // محاولة بديلة باستخدام كاميرا user
-                if (currentCameraId === "environment") {
-                    try {
-                        currentCameraId = "user";
-                        await html5QrCode.start(
-                            { facingMode: "user" },
-                            config,
-                            (decodedText) => {
-                                if (currentActiveInput) {
-                                    currentActiveInput.value = decodedText;
-                                    syncValuesToAttributes();
-                                    closeScannerModal();
-                                }
-                            },
-                            (errorMessage) => {}
-                        );
-                        isScanning = true;
-                        document.getElementById('scanMessage').innerHTML = "✅ الكاميرا الأمامية تعمل - وجه الكاميرا إلى الرمز";
-                    } catch(e2) {
-                        document.getElementById('scanMessage').innerHTML = "❌ لا يمكن الوصول إلى الكاميرا. تأكد من منح الصلاحية.";
-                    }
-                }
-            }
-        }
-
-        async function switchCamera() {
-            if (!html5QrCode || !isScanning) return;
-            // تبديل الكاميرا
-            currentCameraId = currentCameraId === "environment" ? "user" : "environment";
-            // إعادة التشغيل بالكاميرا الجديدة
-            try {
-                await html5QrCode.stop();
-                isScanning = false;
-            } catch(e) {}
-            
-            const readerDiv = document.getElementById('qr-reader');
-            readerDiv.innerHTML = '';
-            html5QrCode = new Html5Qrcode("qr-reader");
-            const config = {
-                fps: 15,
-                qrbox: { width: 280, height: 280 },
-                aspectRatio: 1.0
-            };
-            
-            try {
-                await html5QrCode.start(
-                    { facingMode: currentCameraId === "environment" ? "environment" : "user" },
-                    config,
-                    (decodedText) => {
-                        if (currentActiveInput) {
-                            currentActiveInput.value = decodedText;
-                            syncValuesToAttributes();
-                            closeScannerModal();
-                        }
-                    },
-                    (errorMessage) => {}
-                );
-                isScanning = true;
-                document.getElementById('scanMessage').innerText = "تم تبديل الكاميرا - وجه الكاميرا إلى الرمز";
-            } catch(err) {
-                document.getElementById('scanMessage').innerText = "فشل تبديل الكاميرا";
-            }
-        }
-
-        async function closeScannerModal() {
-            if (html5QrCode && isScanning) {
-                try {
-                    await html5QrCode.stop();
-                } catch(e) {}
-                isScanning = false;
-            }
-            const modal = document.getElementById('cameraModal');
-            modal.style.display = 'none';
-            const readerDiv = document.getElementById('qr-reader');
-            if (readerDiv) readerDiv.innerHTML = '';
-            currentActiveInput = null;
-            // إعادة تعيين الكاميرا إلى الخلفية للجلسة القادمة
-            currentCameraId = "environment";
-        }
-
-        function bindModalEvents() {
-            const closeBtn = document.getElementById('closeModalBtn');
-            const cancelBtn = document.getElementById('cancelScanBtn');
-            const switchBtn = document.getElementById('switchCameraBtn');
-            if (closeBtn) closeBtn.onclick = closeScannerModal;
-            if (cancelBtn) cancelBtn.onclick = closeScannerModal;
-            if (switchBtn) switchBtn.onclick = switchCamera;
-            window.addEventListener('click', (e) => {
-                const modal = document.getElementById('cameraModal');
-                if (e.target === modal) closeScannerModal();
-            });
-        }
-
-        function syncValuesToAttributes() {
-            const allTableInputs = document.querySelectorAll('#devicesTable input');
-            allTableInputs.forEach(inp => inp.setAttribute('value', inp.value));
-            const fullText = document.getElementById('fullReceiptText');
-            if (fullText) {
-                fullText.setAttribute('value', fullText.value);
-                fullText.innerHTML = fullText.value;
-            }
-            const topDate = document.getElementById('topDateInput');
-            if (topDate) topDate.setAttribute('value', topDate.value);
-            const receiverName = document.getElementById('receiverName');
-            const receiverDept = document.getElementById('receiverDept');
-            const receiverSignature = document.getElementById('receiverSignature');
-            if (receiverName) receiverName.setAttribute('value', receiverName.value);
-            if (receiverDept) receiverDept.setAttribute('value', receiverDept.value);
-            if (receiverSignature) receiverSignature.setAttribute('value', receiverSignature.value);
-        }
-
-        function autoResizeTextarea(textarea) {
-            if (!textarea) return;
-            textarea.style.height = 'auto';
-            textarea.style.height = Math.max(40, textarea.scrollHeight) + 'px';
-        }
-
-        function prepareForCapture() {
-            syncValuesToAttributes();
-            const textarea = document.getElementById('fullReceiptText');
-            if (textarea) autoResizeTextarea(textarea);
-        }
-
-        window.downloadReportImage = function() {
-            if (!reportElement) { alert("خطأ"); return; }
-            const btn = document.getElementById('saveImageBtn');
-            const originalText = btn ? btn.innerText : "حفظ كصورة";
-            if (btn) { btn.innerText = "جاري الإنشاء..."; btn.disabled = true; }
-            prepareForCapture();
-            setTimeout(() => {
-                html2canvas(reportElement, {
-                    scale: 2.5,
-                    backgroundColor: '#ffffff',
-                    useCORS: true,
-                    logging: false,
-                    windowWidth: reportElement.scrollWidth,
-                    onclone: (clonedDoc) => {
-                        const origInputs = document.querySelectorAll('#devicesTable input');
-                        const clonedInputs = clonedDoc.querySelectorAll('#devicesTable input');
-                        for (let i=0; i<origInputs.length && i<clonedInputs.length; i++) clonedInputs[i].value = origInputs[i].value;
-                        const origText = document.getElementById('fullReceiptText');
-                        const clonedText = clonedDoc.getElementById('fullReceiptText');
-                        if (origText && clonedText) clonedText.value = origText.value;
-                        const origDate = document.getElementById('topDateInput');
-                        const clonedDate = clonedDoc.getElementById('topDateInput');
-                        if (origDate && clonedDate) clonedDate.value = origDate.value;
-                        ['receiverName','receiverDept','receiverSignature'].forEach(id => {
-                            const orig = document.getElementById(id);
-                            const cloned = clonedDoc.getElementById(id);
-                            if (orig && cloned) cloned.value = orig.value;
-                        });
-                    }
-                }).then(canvas => {
-                    const link = document.createElement('a');
-                    const dateStr = new Date().toISOString().slice(0,10);
-                    link.download = `وصل_استلام_${dateStr}.png`;
-                    link.href = canvas.toDataURL('image/png');
-                    link.click();
-                    if (btn) { btn.innerText = originalText; btn.disabled = false; }
-                }).catch(() => { alert("خطأ"); if(btn){ btn.innerText = originalText; btn.disabled = false; } });
-            }, 150);
-        };
-
-        window.printReport = function() {
-            prepareForCapture();
-            setTimeout(() => window.print(), 120);
-        };
-
-        const saveBtn = document.getElementById('saveImageBtn');
-        if (saveBtn) {
-            const newSave = saveBtn.cloneNode(true);
-            saveBtn.parentNode.replaceChild(newSave, saveBtn);
-            newSave.addEventListener('click', (e) => { e.preventDefault(); window.downloadReportImage(); });
-        }
-        const printBtn = document.getElementById('printBtn');
-        if (printBtn) {
-            const newPrint = printBtn.cloneNode(true);
-            printBtn.parentNode.replaceChild(newPrint, printBtn);
-            newPrint.addEventListener('click', (e) => { e.preventDefault(); window.printReport(); });
-        }
-        if (addRowBtn) addRowBtn.addEventListener('click', addNewRow);
-        
-        function rebindAllBarcodeBtns() {
-            const btns = document.querySelectorAll('.barcode-btn');
-            btns.forEach(btn => {
-                btn.removeEventListener('click', handleBarcodeClick);
-                btn.addEventListener('click', handleBarcodeClick);
-            });
-        }
-        
-        const firstSerialCell = document.querySelector('#tableBody tr:first-child .serial-cell');
-        if (firstSerialCell) {
-            const existingWrapper = firstSerialCell.querySelector('.serial-wrapper');
-            if (!existingWrapper) {
-                const oldInput = firstSerialCell.querySelector('.serial-input');
-                const oldValue = oldInput ? oldInput.value : '';
-                const { wrapper, input } = createSerialCellWithScanner(oldValue);
-                firstSerialCell.innerHTML = '';
-                firstSerialCell.appendChild(wrapper);
-                if (oldInput) input.value = oldValue;
-            } else {
-                const btn = existingWrapper.querySelector('.barcode-btn');
-                if (btn) {
-                    btn.removeEventListener('click', handleBarcodeClick);
-                    btn.addEventListener('click', handleBarcodeClick);
-                }
-            }
-        }
-        rebindAllBarcodeBtns();
-        
-        const observer = new MutationObserver(() => {
-            rebindAllBarcodeBtns();
-            syncValuesToAttributes();
-        });
-        observer.observe(tableBody, { childList: true, subtree: true });
-        bindModalEvents();
-        
-        const fullTextarea = document.getElementById('fullReceiptText');
-        if (fullTextarea) {
-            fullTextarea.addEventListener('input', function() {
-                autoResizeTextarea(this);
-                syncValuesToAttributes();
-            });
-            autoResizeTextarea(fullTextarea);
-        }
-        
-        if (topDateInput) {
-            topDateInput.addEventListener('change', syncValuesToAttributes);
-            topDateInput.addEventListener('keyup', syncValuesToAttributes);
-        }
-        
-        syncValuesToAttributes();
-        
-        window.addEventListener('beforeunload', () => {
-            if (html5QrCode && isScanning) {
-                html5QrCode.stop().catch(e=>{});
-            }
-        });
-    })();
-</script>
-</body>
-</html>
+export default App;
