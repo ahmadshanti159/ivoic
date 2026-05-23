@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>وصل استلام - وزارة الداخلية</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #e2e6e9;
+            font-family: 'Segoe UI', 'Tahoma', 'Arial', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 30px 20px;
+        }
+
+        .btn-container {
+            width: 210mm;
+            max-width: 100%;
+            text-align: center;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .btn-download, .btn-print {
+            background-color: #1e466e;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+        .btn-print {
+            background-color: #2c7a4d;
+        }
+        .btn-download:hover {
+            background-color: #0f2c48;
+        }
+        .btn-print:hover {
+            background-color: #1e5a3a;
+        }
+
+        .report-page {
+            background: white;
+            width: 210mm;
+            min-height: 297mm;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+            margin: 0 auto;
+            position: relative;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* شريط أعلام فلسطين - أطول وألوان متساوية */
+        .palestine-flag {
+            width: 100%;
+            height: 16px;
+            display: flex;
+        }
+        .flag-black {
+            flex: 1;
+            background-color: #000000;
+        }
+        .flag-white {
+            flex: 1;
+            background-color: #FFFFFF;
+        }
+        .flag-green {
+            flex: 1;
+            background-color: #149954;
+        }
+        .flag-red-stripe {
+            flex: 1;
+            background-color: #E4312B;
+        }
+
+        .gov-header {
+            width: 100%;
+            padding: 12px 25px 8px 25px;
+            border-bottom: 2px solid #1e466e;
+            background-color: #ffffff;
+            box-sizing: border-box;
+            flex-shrink: 0;
+        }
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .header-right {
+            text-align: right;
+            flex: 1;
+        }
+        .header-center {
+            text-align: center;
+            flex-shrink: 0;
+        }
+        .header-left {
+            text-align: left;
+            flex: 1;
+        }
+        .logo-img {
+            width: 65px;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+        }
+        .ministry-name {
+            font-size: 16px;
+            font-weight: 800;
+            color: #1e466e;
+            line-height: 1.4;
+        }
+        .sub-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #2c5282;
+            margin-top: 2px;
+        }
+        .dept-name {
+            font-size: 13px;
+            font-weight: 500;
+            color: #1a3a5f;
+            margin-top: 3px;
+        }
+        .english-text {
+            font-size: 12px;
+            font-weight: 500;
+            color: #4a627a;
+            line-height: 1.3;
+            direction: ltr;
+        }
+        .separator-line {
+            height: 2px;
+            background: linear-gradient(90deg, #1e466e, #9bb7d4, #1e466e);
+            margin-top: 8px;
+            width: 100%;
+        }
+
+        /* التاريخ تحت الترويسة */
+        .date-under-header {
+            text-align: left;
+            padding: 6px 28px 0 28px;
+            font-size: 11px;
+            color: #4a627a;
+            font-family: inherit;
+            background-color: white;
+        }
+        .date-under-header span {
+            font-weight: 500;
+        }
+        .date-under-header input {
+            border: none;
+            border-bottom: 1px dashed #9aaebf;
+            background: transparent;
+            font-size: 11px;
+            font-family: inherit;
+            padding: 2px 4px;
+            width: 110px;
+            text-align: center;
+            color: #1e466e;
+            cursor: text;
+        }
+        .date-under-header input:focus {
+            border-bottom: 1px solid #1e466e;
+            outline: none;
+        }
+
+        .report-content {
+            padding: 12px 28px 25px 28px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+        }
+
+        .receipt-title {
+            text-align: center;
+            font-size: 22px;
+            font-weight: 700;
+            color: #1a3a5f;
+            margin-bottom: 18px;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+        /* حقل نصي قابل للتعديل بالكامل (متعدد الأسطر) */
+        .receipt-text-editable {
+            width: 100%;
+            border: none;
+            border-bottom: 1px dashed #9aaebf;
+            background: transparent;
+            font-size: 15px;
+            font-family: inherit;
+            padding: 6px 8px;
+            margin-bottom: 18px;
+            text-align: right;
+            color: #2c3e50;
+            font-weight: normal;
+            outline: none;
+            resize: vertical;
+            overflow: auto;
+            line-height: 1.6;
+            direction: rtl;
+        }
+        .receipt-text-editable:focus {
+            border-bottom: 1px solid #1e466e;
+        }
+
+        .devices-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            font-size: 14px;
+            table-layout: fixed;
+        }
+        .devices-table th, .devices-table td {
+            border: 1px solid #bdc3c7;
+            padding: 8px 6px;
+            text-align: center;
+            vertical-align: middle;
+        }
+        .devices-table th:nth-child(1), .devices-table td:nth-child(1) { width: 12%; }
+        .devices-table th:nth-child(2), .devices-table td:nth-child(2) { width: 35%; }
+        .devices-table th:nth-child(3), .devices-table td:nth-child(3) { width: 20%; }
+        .devices-table th:nth-child(4), .devices-table td:nth-child(4) { width: 20%; }
+        .devices-table th:nth-child(5), .devices-table td:nth-child(5) { width: 13%; }
+        
+        .devices-table th {
+            background-color: #eef2f7;
+            font-weight: 700;
+            color: #1e466e;
+            font-size: 13px;
+        }
+        .devices-table td {
+            background-color: #fff;
+        }
+        .devices-table td input {
+            width: 100%;
+            border: none;
+            padding: 6px 4px;
+            font-size: 13px;
+            text-align: center;
+            background: transparent;
+            outline: none;
+            margin: 0;
+            font-family: inherit;
+        }
+        .devices-table td input:focus {
+            outline: none;
+        }
+        .serial-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            direction: ltr;
+            width: 100%;
+        }
+        .serial-wrapper input {
+            flex: 1;
+            margin: 0;
+            min-width: 0;
+            border: none;
+        }
+        .serial-wrapper input:focus {
+            outline: none;
+        }
+        .barcode-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+            padding: 2px 4px;
+            border-radius: 6px;
+            background-color: #eef2f7;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 30px;
+            height: 30px;
+            flex-shrink: 0;
+        }
+        .barcode-btn:hover {
+            background-color: #d4dfec;
+        }
+        .add-row-btn {
+            background-color: #1e466e;
+            color: white;
+            border: none;
+            padding: 5px 14px;
+            font-size: 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-bottom: 12px;
+            display: inline-block;
+            font-weight: 500;
+        }
+        .btn-wrapper {
+            text-align: left;
+            margin-bottom: 8px;
+        }
+
+        .receiver-section {
+            width: 100%;
+            max-width: 360px;
+            margin-top: 6px;
+            margin-bottom: 0;
+            border-top: 1px solid #ccd7e4;
+            padding-top: 8px;
+        }
+        .signature-line {
+            display: flex;
+            align-items: baseline;
+            gap: 5px;
+            margin-bottom: 4px;
+            flex-wrap: wrap;
+        }
+        .signature-line label {
+            font-weight: 700;
+            font-size: 11px;
+            color: #1e3a5f;
+            min-width: 72px;
+            letter-spacing: 0.3px;
+        }
+        .signature-line input {
+            flex: 1;
+            border: none;
+            border-bottom: 1px solid #9aaebf;
+            padding: 3px 3px;
+            font-size: 11px;
+            background: #ffffff;
+            outline: none;
+            font-family: inherit;
+        }
+        .signature-field {
+            margin-top: 4px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .signature-field label {
+            font-weight: 700;
+            font-size: 11px;
+            color: #1e3a5f;
+            min-width: 58px;
+        }
+        .signature-field input {
+            flex: 1;
+            border: none;
+            border-bottom: 1px solid #9aaebf;
+            padding: 3px 3px;
+            font-size: 11px;
+            background: #ffffff;
+            outline: none;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.85);
+            justify-content: center;
+            align-items: center;
+            direction: ltr;
+        }
+        .modal-content {
+            background: #1e2a36;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 24px;
+            padding: 16px;
+            text-align: center;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+            margin-bottom: 12px;
+            font-weight: bold;
+        }
+        .close-modal {
+            background: #dc3545;
+            border: none;
+            color: white;
+            font-size: 18px;
+            border-radius: 30px;
+            width: 32px;
+            height: 32px;
+            cursor: pointer;
+        }
+        #video-preview {
+            width: 100%;
+            background: #000;
+            border-radius: 16px;
+            overflow: hidden;
+        }
+        .scan-message {
+            color: #ffd966;
+            margin-top: 10px;
+            font-size: 12px;
+        }
+        .modal button.close-btn {
+            margin-top: 12px;
+            background: #2c7a4d;
+            border: none;
+            padding: 8px 18px;
+            color: white;
+            border-radius: 40px;
+            cursor: pointer;
+        }
+
+        @media print {
+            .btn-container, .add-row-btn, .btn-wrapper, .barcode-btn, .modal {
+                display: none !important;
+            }
+            body {
+                background: white;
+                padding: 0;
+            }
+            @page {
+                size: A4;
+                margin: 0mm;
+            }
+            .report-page {
+                width: 100%;
+                min-height: 297mm;
+                box-shadow: none;
+            }
+            .devices-table th, .devices-table td {
+                border: 1px solid #000 !important;
+            }
+            .receiver-section {
+                max-width: 360px;
+            }
+            .signature-line label, .signature-field label {
+                font-size: 10px !important;
+            }
+            .signature-line input, .signature-field input {
+                font-size: 10px !important;
+                padding: 2px 2px !important;
+            }
+            .receipt-text-editable {
+                border-bottom: none !important;
+                padding: 2px 0 !important;
+                resize: none !important;
+                overflow: hidden !important;
+            }
+            .palestine-flag {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                height: 16px !important;
+            }
+            .devices-table {
+                table-layout: auto;
+            }
+            textarea {
+                resize: none !important;
+            }
+            .date-under-header input {
+                border-bottom: none !important;
+                padding: 0 !important;
+            }
+        }
+        @media (max-width: 220mm) and (not print) {
+            .report-page, .btn-container {
+                width: 100%;
+            }
+            .receiver-section {
+                max-width: 100%;
+            }
+            .devices-table {
+                table-layout: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="btn-container">
+    <button class="btn-download" id="saveImageBtn">📸 حفظ كصورة</button>
+    <button class="btn-print" id="printBtn">🖨️ طباعة التقرير</button>
+</div>
+
+<div class="report-page" id="reportContainer">
+    <!-- شريط أعلام فلسطين في أعلى الصفحة -->
+    <div class="palestine-flag">
+        <div class="flag-black"></div>
+        <div class="flag-white"></div>
+        <div class="flag-green"></div>
+        <div class="flag-red-stripe"></div>
+    </div>
+
+    <div class="gov-header">
+        <div class="header-container">
+            <div class="header-right">
+                <div class="ministry-name">دولة فلسطين</div>
+                <div class="sub-title">وزارة الداخلية</div>
+                <div class="dept-name">المديرية العامة للشرطة</div>
+                <div class="dept-name">إدارة الاتصالات وتكنولوجيا المعلومات</div>
+            </div>
+            <div class="header-center">
+                <img class="logo-img" src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/db/Coat_of_arms_of_the_Palestinian_National_Authority.svg/500px-Coat_of_arms_of_the_Palestinian_National_Authority.svg.png" alt="شعار فلسطين" onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'%3E%3Ccircle cx=\'50\' cy=\'50\' r=\'45\' fill=\'%231e466e\'/%3E%3Cpolygon points=\'50,20 65,55 80,55 68,70 73,90 50,75 27,90 32,70 20,55 35,55\' fill=\'%23D4AF37\'/%3E%3C/svg%3E';">
+            </div>
+            <div class="header-left">
+                <div class="english-text">State of Palestine</div>
+                <div class="english-text">Ministry of Interior</div>
+                <div class="english-text">General Police Directorate</div>
+                <div class="english-text">ICT Department</div>
+            </div>
+        </div>
+        <div class="separator-line"></div>
+    </div>
+
+    <!-- التاريخ تحت الترويسة -->
+    <div class="date-under-header">
+        <span>التاريخ: </span>
+        <input type="text" id="topDateInput" placeholder="yyyy-mm-dd" value="">
+    </div>
+
+    <div class="report-content">
+        <div class="receipt-title">وصل استلام</div>
+        
+        <!-- حقل نصي واحد قابل للتعديل بالكامل (السطر بأكمله) -->
+        <textarea id="fullReceiptText" class="receipt-text-editable" rows="2" placeholder="اكتب نص الاستلام هنا...">استلمت أنا الموقع أدناه الأجهزة الواردة في الجدول التالي من إدارة الاتصالات وتكنولوجيا المعلومات :-</textarea>
+
+        <div class="btn-wrapper">
+            <button type="button" class="add-row-btn" id="addRowBtn">+ إضافة جهاز</button>
+        </div>
+        <table class="devices-table" id="devicesTable">
+            <thead>
+                <tr>
+                    <th>العدد</th>
+                    <th>الرقم التسلسلي <span style="font-size:10px;">(📷 مسح)</span></th>
+                    <th>نوع الجهاز</th>
+                    <th>طبيعة الجهاز</th>
+                    <th>#</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                <tr>
+                    <td><input type="text" class="unit-input" value="1" placeholder="العدد"></td>
+                    <td class="serial-cell">
+                        <div class="serial-wrapper">
+                            <input type="text" class="serial-input" value="123123123" placeholder="الرقم التسلسلي">
+                            <button type="button" class="barcode-btn" title="مسح الرمز التسلسلي">📷</button>
+                        </div>
+                    </td>
+                    <td><input type="text" class="type-input" value="hp" placeholder="نوع الجهاز"></td>
+                    <td><input type="text" class="nature-input" value="شاشة" placeholder="طبيعة الجهاز"></td>
+                    <td><input type="text" class="num-input" value="1" placeholder="#"></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- قسم المستلم -->
+        <div class="receiver-section">
+            <div class="signature-line">
+                <label>رتبة واسم المستلم :</label>
+                <input type="text" id="receiverName" placeholder="الرتبة / الاسم الكامل">
+            </div>
+            <div class="signature-line">
+                <label>الإدارة :</label>
+                <input type="text" id="receiverDept" placeholder="الإدارة التابع لها">
+            </div>
+            <div class="signature-field">
+                <label>التوقيع :</label>
+                <input type="text" id="receiverSignature" placeholder="التوقيع أو اسم الموقع">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- مودال الكاميرا -->
+<div id="cameraModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <span>مسح الرمز التسلسلي (باركود / QR)</span>
+            <button class="close-modal" id="closeModalBtn">✕</button>
+        </div>
+        <div id="video-preview" style="width:100%; min-height: 280px; position:relative;"></div>
+        <div class="scan-message" id="scanMessage">توجيه الكاميرا إلى الرمز التسلسلي</div>
+        <button class="close-btn" id="cancelScanBtn">إلغاء</button>
+    </div>
+</div>
+
+<script>
+    (function() {
+        const reportElement = document.getElementById('reportContainer');
+        const tableBody = document.getElementById('tableBody');
+        const addRowBtn = document.getElementById('addRowBtn');
+        let currentActiveInput = null;
+        let scannerActive = false;
+
+        // تعيين التاريخ الحالي تلقائياً
+        const topDateInput = document.getElementById('topDateInput');
+        if (topDateInput) {
+            const today = new Date();
+            const yyyy = today.getFullYear();
+            const mm = String(today.getMonth() + 1).padStart(2, '0');
+            const dd = String(today.getDate()).padStart(2, '0');
+            topDateInput.value = `${yyyy}-${mm}-${dd}`;
+        }
+
+        // دالة للحصول على آخر رقم (#) من الجدول
+        function getNextNumber() {
+            const allNumInputs = document.querySelectorAll('#tableBody .num-input');
+            let maxNum = 0;
+            allNumInputs.forEach(input => {
+                const val = parseInt(input.value, 10);
+                if (!isNaN(val) && val > maxNum) {
+                    maxNum = val;
+                }
+            });
+            return maxNum + 1;
+        }
+
+        function createSerialCellWithScanner(currentValue = '') {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'serial-wrapper';
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'serial-input';
+            input.placeholder = 'الرقم التسلسلي';
+            input.value = currentValue;
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'barcode-btn';
+            btn.title = 'مسح الرمز التسلسلي';
+            btn.innerHTML = '📷';
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                currentActiveInput = input;
+                openScannerModal();
+            });
+            wrapper.appendChild(input);
+            wrapper.appendChild(btn);
+            return { wrapper, input };
+        }
+
+        function addNewRow() {
+            const newRow = document.createElement('tr');
+            
+            const tdUnit = document.createElement('td');
+            const unitInput = document.createElement('input');
+            unitInput.type = 'text';
+            unitInput.className = 'unit-input';
+            unitInput.placeholder = 'العدد';
+            unitInput.value = '';
+            tdUnit.appendChild(unitInput);
+            
+            const tdSerial = document.createElement('td');
+            const { wrapper, input: serialInput } = createSerialCellWithScanner('');
+            tdSerial.appendChild(wrapper);
+            
+            const tdType = document.createElement('td');
+            const typeInput = document.createElement('input');
+            typeInput.className = 'type-input';
+            typeInput.placeholder = 'نوع الجهاز';
+            tdType.appendChild(typeInput);
+            
+            const tdNature = document.createElement('td');
+            const natureInput = document.createElement('input');
+            natureInput.className = 'nature-input';
+            natureInput.placeholder = 'طبيعة الجهاز';
+            tdNature.appendChild(natureInput);
+            
+            const tdNum = document.createElement('td');
+            const numInput = document.createElement('input');
+            numInput.className = 'num-input';
+            numInput.placeholder = '#';
+            // تعيين الرقم التسلسلي الجديد
+            const nextNumber = getNextNumber();
+            numInput.value = nextNumber.toString();
+            tdNum.appendChild(numInput);
+            
+            newRow.appendChild(tdUnit);
+            newRow.appendChild(tdSerial);
+            newRow.appendChild(tdType);
+            newRow.appendChild(tdNature);
+            newRow.appendChild(tdNum);
+            tableBody.appendChild(newRow);
+            attachInputListeners(newRow);
+            syncValuesToAttributes();
+        }
+
+        function attachInputListeners(row) {
+            const inputs = row.querySelectorAll('input');
+            inputs.forEach(inp => {
+                inp.addEventListener('change', syncValuesToAttributes);
+                inp.addEventListener('keyup', syncValuesToAttributes);
+            });
+            const btns = row.querySelectorAll('.barcode-btn');
+            btns.forEach(btn => {
+                btn.removeEventListener('click', handleBarcodeClick);
+                btn.addEventListener('click', handleBarcodeClick);
+            });
+        }
+        
+        function handleBarcodeClick(e) {
+            e.preventDefault();
+            const wrapper = e.currentTarget.closest('.serial-wrapper');
+            if (wrapper) {
+                const serialInput = wrapper.querySelector('.serial-input');
+                if (serialInput) {
+                    currentActiveInput = serialInput;
+                    openScannerModal();
+                }
+            }
+        }
+
+        function openScannerModal() {
+            if (!currentActiveInput) return;
+            const modal = document.getElementById('cameraModal');
+            modal.style.display = 'flex';
+            startQuaggaScanner();
+        }
+
+        function startQuaggaScanner() {
+            if (scannerActive) return;
+            const targetDiv = document.getElementById('video-preview');
+            targetDiv.innerHTML = '';
+            Quagga.init({
+                inputStream: {
+                    type: "LiveStream",
+                    target: targetDiv,
+                    constraints: { facingMode: "environment", width: { min: 480 }, height: { min: 320 } }
+                },
+                locator: { patchSize: "medium", halfSample: true },
+                decoder: {
+                    readers: ["code_128_reader", "ean_reader", "ean_8_reader", "code_39_reader", "code_93_reader", "codabar_reader", "upc_reader", "upc_e_reader", "qr_code_reader", "pdf417_reader"]
+                },
+                locate: true,
+                frequency: 10
+            }, function(err) {
+                if (err) {
+                    document.getElementById('scanMessage').innerText = "تعذر الوصول إلى الكاميرا، تأكد من منح الصلاحية.";
+                    return;
+                }
+                Quagga.start();
+                scannerActive = true;
+                Quagga.onDetected(handleBarcodeDetected);
+            });
+        }
+
+        function handleBarcodeDetected(data) {
+            if (!currentActiveInput) return;
+            let code = data.codeResult.code;
+            if (code) {
+                currentActiveInput.value = code;
+                syncValuesToAttributes();
+                closeScannerModal();
+                const msgDiv = document.getElementById('scanMessage');
+                msgDiv.innerText = "✓ تم المسح بنجاح: " + code;
+                setTimeout(() => { if (msgDiv) msgDiv.innerText = "توجيه الكاميرا إلى الرمز التسلسلي"; }, 1500);
+            }
+        }
+
+        function stopQuagga() {
+            if (scannerActive) {
+                Quagga.stop();
+                scannerActive = false;
+            }
+            Quagga.offDetected(handleBarcodeDetected);
+        }
+
+        function closeScannerModal() {
+            stopQuagga();
+            const modal = document.getElementById('cameraModal');
+            modal.style.display = 'none';
+            const videoDiv = document.getElementById('video-preview');
+            if (videoDiv) videoDiv.innerHTML = '';
+            currentActiveInput = null;
+        }
+
+        function bindModalEvents() {
+            const closeBtn = document.getElementById('closeModalBtn');
+            const cancelBtn = document.getElementById('cancelScanBtn');
+            if (closeBtn) closeBtn.onclick = closeScannerModal;
+            if (cancelBtn) cancelBtn.onclick = closeScannerModal;
+            window.addEventListener('click', (e) => {
+                const modal = document.getElementById('cameraModal');
+                if (e.target === modal) closeScannerModal();
+            });
+        }
+
+        function syncValuesToAttributes() {
+            const allTableInputs = document.querySelectorAll('#devicesTable input');
+            allTableInputs.forEach(inp => inp.setAttribute('value', inp.value));
+            const fullText = document.getElementById('fullReceiptText');
+            if (fullText) {
+                fullText.setAttribute('value', fullText.value);
+                fullText.innerHTML = fullText.value;
+            }
+            const topDate = document.getElementById('topDateInput');
+            if (topDate) topDate.setAttribute('value', topDate.value);
+            const receiverName = document.getElementById('receiverName');
+            const receiverDept = document.getElementById('receiverDept');
+            const receiverSignature = document.getElementById('receiverSignature');
+            if (receiverName) receiverName.setAttribute('value', receiverName.value);
+            if (receiverDept) receiverDept.setAttribute('value', receiverDept.value);
+            if (receiverSignature) receiverSignature.setAttribute('value', receiverSignature.value);
+        }
+
+        function autoResizeTextarea(textarea) {
+            if (!textarea) return;
+            textarea.style.height = 'auto';
+            textarea.style.height = Math.max(40, textarea.scrollHeight) + 'px';
+        }
+
+        function prepareForCapture() {
+            syncValuesToAttributes();
+            const textarea = document.getElementById('fullReceiptText');
+            if (textarea) autoResizeTextarea(textarea);
+        }
+
+        window.downloadReportImage = function() {
+            if (!reportElement) { alert("خطأ"); return; }
+            const btn = document.getElementById('saveImageBtn');
+            const originalText = btn ? btn.innerText : "حفظ كصورة";
+            if (btn) { btn.innerText = "جاري الإنشاء..."; btn.disabled = true; }
+            prepareForCapture();
+            setTimeout(() => {
+                html2canvas(reportElement, {
+                    scale: 2.5,
+                    backgroundColor: '#ffffff',
+                    useCORS: true,
+                    logging: false,
+                    windowWidth: reportElement.scrollWidth,
+                    onclone: (clonedDoc) => {
+                        const origInputs = document.querySelectorAll('#devicesTable input');
+                        const clonedInputs = clonedDoc.querySelectorAll('#devicesTable input');
+                        for (let i=0; i<origInputs.length && i<clonedInputs.length; i++) clonedInputs[i].value = origInputs[i].value;
+                        const origText = document.getElementById('fullReceiptText');
+                        const clonedText = clonedDoc.getElementById('fullReceiptText');
+                        if (origText && clonedText) {
+                            clonedText.value = origText.value;
+                            clonedText.innerHTML = origText.value;
+                        }
+                        const origDate = document.getElementById('topDateInput');
+                        const clonedDate = clonedDoc.getElementById('topDateInput');
+                        if (origDate && clonedDate) clonedDate.value = origDate.value;
+                        ['receiverName','receiverDept','receiverSignature'].forEach(id => {
+                            const orig = document.getElementById(id);
+                            const cloned = clonedDoc.getElementById(id);
+                            if (orig && cloned) cloned.value = orig.value;
+                        });
+                    }
+                }).then(canvas => {
+                    const link = document.createElement('a');
+                    const dateStr = new Date().toISOString().slice(0,10);
+                    link.download = `وصل_استلام_${dateStr}.png`;
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+                    if (btn) { btn.innerText = originalText; btn.disabled = false; }
+                }).catch(() => { alert("خطأ"); if(btn){ btn.innerText = originalText; btn.disabled = false; } });
+            }, 150);
+        };
+
+        window.printReport = function() {
+            prepareForCapture();
+            setTimeout(() => window.print(), 120);
+        };
+
+        const saveBtn = document.getElementById('saveImageBtn');
+        if (saveBtn) {
+            const newSave = saveBtn.cloneNode(true);
+            saveBtn.parentNode.replaceChild(newSave, saveBtn);
+            newSave.addEventListener('click', (e) => { e.preventDefault(); window.downloadReportImage(); });
+        }
+        const printBtn = document.getElementById('printBtn');
+        if (printBtn) {
+            const newPrint = printBtn.cloneNode(true);
+            printBtn.parentNode.replaceChild(newPrint, printBtn);
+            newPrint.addEventListener('click', (e) => { e.preventDefault(); window.printReport(); });
+        }
+        if (addRowBtn) addRowBtn.addEventListener('click', addNewRow);
+        
+        function rebindAllBarcodeBtns() {
+            const btns = document.querySelectorAll('.barcode-btn');
+            btns.forEach(btn => {
+                btn.removeEventListener('click', handleBarcodeClick);
+                btn.addEventListener('click', handleBarcodeClick);
+            });
+        }
+        
+        const firstSerialCell = document.querySelector('#tableBody tr:first-child .serial-cell');
+        if (firstSerialCell) {
+            const existingWrapper = firstSerialCell.querySelector('.serial-wrapper');
+            if (!existingWrapper) {
+                const oldInput = firstSerialCell.querySelector('.serial-input');
+                const oldValue = oldInput ? oldInput.value : '';
+                const { wrapper, input } = createSerialCellWithScanner(oldValue);
+                firstSerialCell.innerHTML = '';
+                firstSerialCell.appendChild(wrapper);
+                if (oldInput) input.value = oldValue;
+            } else {
+                const btn = existingWrapper.querySelector('.barcode-btn');
+                if (btn) {
+                    btn.removeEventListener('click', handleBarcodeClick);
+                    btn.addEventListener('click', handleBarcodeClick);
+                }
+            }
+        }
+        rebindAllBarcodeBtns();
+        const observer = new MutationObserver(() => {
+            rebindAllBarcodeBtns();
+            syncValuesToAttributes();
+        });
+        observer.observe(tableBody, { childList: true, subtree: true });
+        bindModalEvents();
+        
+        const fullTextarea = document.getElementById('fullReceiptText');
+        if (fullTextarea) {
+            fullTextarea.addEventListener('input', function() {
+                autoResizeTextarea(this);
+                syncValuesToAttributes();
+            });
+            fullTextarea.addEventListener('change', syncValuesToAttributes);
+            autoResizeTextarea(fullTextarea);
+        }
+        
+        if (topDateInput) {
+            topDateInput.addEventListener('change', syncValuesToAttributes);
+            topDateInput.addEventListener('keyup', syncValuesToAttributes);
+        }
+        
+        syncValuesToAttributes();
+        
+        window.addEventListener('beforeunload', () => {
+            if (scannerActive) Quagga.stop();
+        });
+    })();
+</script>
+</body>
+</html>
