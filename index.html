@@ -470,10 +470,10 @@
             return maxNum + 1;
         }
 
-        // دالة لربط زر الكاميرا بحقل الإدخال
-        function bindCameraButton(btn, inputElement) {
+        // دالة موحدة لربط زر الكاميرا بحقل الإدخال الموجود بجانبه
+        function bindCameraButtonToInput(btn, inputElement) {
             if (!btn) return;
-            // إزالة أي مستمع قديم
+            // إزالة المستمع القديم إذا وجد
             const newBtn = btn.cloneNode(true);
             btn.parentNode.replaceChild(newBtn, btn);
             newBtn.addEventListener('click', (e) => {
@@ -500,7 +500,7 @@
             btn.innerHTML = '📷';
             btn.title = 'مسح الرمز التسلسلي';
             
-            // ربط الحدث مباشرة
+            // ربط الحدث مباشرة عند الإنشاء
             btn.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -563,7 +563,7 @@
             syncValuesToAttributes();
         }
 
-        // ==================== دوال الكاميرا ====================
+        // ==================== دوال الكاميرا الموحدة ====================
         async function startScanner() {
             if (!html5QrCode) {
                 html5QrCode = new Html5Qrcode(qrRegionId);
@@ -748,7 +748,7 @@
         }
         if (addRowBtn) addRowBtn.addEventListener('click', addNewRow);
         
-        // دالة لربط جميع أزرار الكاميرا في الجدول
+        // دالة موحدة لربط جميع أزرار الكاميرا في الجدول
         function bindAllCameraButtons() {
             const allWrappers = document.querySelectorAll('#tableBody .serial-wrapper');
             allWrappers.forEach(wrapper => {
@@ -756,31 +756,25 @@
                 const inp = wrapper.querySelector('.serial-input');
                 if (btn && inp && !btn.hasAttribute('data-scanner-bound')) {
                     btn.setAttribute('data-scanner-bound', 'true');
-                    btn.addEventListener('click', (e) => {
+                    // إزالة أي مستمع قديم وإضافة المستمع الجديد
+                    const newBtn = btn.cloneNode(true);
+                    btn.parentNode.replaceChild(newBtn, btn);
+                    newBtn.addEventListener('click', (e) => {
                         e.preventDefault();
                         e.stopPropagation();
                         currentActiveInput = inp;
                         openScannerModal();
                     });
+                    // تحديث المرجع
+                    if (wrapper.querySelector('.barcode-btn')) {
+                        wrapper.querySelector('.barcode-btn').setAttribute('data-scanner-bound', 'true');
+                    }
                 }
             });
         }
         
-        // إعداد الصف الأول
-        const firstWrapper = document.querySelector('#tableBody tr:first-child .serial-wrapper');
-        if (firstWrapper) {
-            const firstBtn = firstWrapper.querySelector('.barcode-btn');
-            const firstInput = firstWrapper.querySelector('.serial-input');
-            if (firstBtn && firstInput) {
-                firstBtn.setAttribute('data-scanner-bound', 'true');
-                firstBtn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    currentActiveInput = firstInput;
-                    openScannerModal();
-                });
-            }
-        }
+        // ربط أزرار الصف الأول
+        bindAllCameraButtons();
         
         // مراقبة التغييرات في الجدول لإعادة ربط الأزرار الجديدة
         const observer = new MutationObserver(() => {
@@ -804,9 +798,6 @@
             topDateInput.addEventListener('change', syncValuesToAttributes);
             topDateInput.addEventListener('keyup', syncValuesToAttributes);
         }
-        
-        // ربط الأزرار الموجودة مبدئياً
-        bindAllCameraButtons();
         
         syncValuesToAttributes();
         
