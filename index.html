@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>وصل استلام - وزارة الداخلية</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <!-- مكتبة Html5-QRCode الحديثة والتي تعمل على الهواتف والكمبيوتر بشكل ممتاز -->
-    <script src="https://unpkg.com/html5-qrcode/minified/html5-qrcode.min.js"></script>
+    <!-- مكتبة Html5-QRCode -->
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -69,7 +69,6 @@
             flex-direction: column;
         }
 
-        /* شريط أعلام فلسطين */
         .palestine-flag {
             width: 100%;
             height: 16px;
@@ -270,15 +269,15 @@
             top: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0,0,0,0.9);
+            background-color: rgba(0,0,0,0.95);
             justify-content: center;
             align-items: center;
             direction: ltr;
         }
         .modal-content {
             background: #1e2a36;
-            width: 90%;
-            max-width: 500px;
+            width: 92%;
+            max-width: 550px;
             border-radius: 24px;
             padding: 16px;
             text-align: center;
@@ -305,15 +304,31 @@
             background: #000;
             border-radius: 16px;
             overflow: hidden;
+            min-height: 300px;
         }
         .scan-message {
             color: #ffd966;
             margin-top: 10px;
             font-size: 12px;
         }
+        .camera-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 12px;
+        }
+        .camera-buttons button {
+            background: #2c7a4d;
+            border: none;
+            padding: 6px 12px;
+            color: white;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 12px;
+        }
         .modal button.close-btn {
             margin-top: 12px;
-            background: #2c7a4d;
+            background: #6c757d;
             border: none;
             padding: 8px 18px;
             color: white;
@@ -397,9 +412,12 @@
 
 <div id="cameraModal" class="modal">
     <div class="modal-content">
-        <div class="modal-header"><span>مسح الرمز التسلسلي (باركود / QR)</span><button class="close-modal" id="closeModalBtn">✕</button></div>
-        <div id="qr-reader" style="width:100%;"></div>
-        <div class="scan-message" id="scanMessage">توجيه الكاميرا إلى الرمز التسلسلي</div>
+        <div class="modal-header"><span>مسح الرمز التسلسلي</span><button class="close-modal" id="closeModalBtn">✕</button></div>
+        <div id="qr-reader"></div>
+        <div class="camera-buttons">
+            <button id="switchCameraBtn">🔄 تبديل الكاميرا</button>
+        </div>
+        <div class="scan-message" id="scanMessage">توجيه الكاميرا إلى الرمز التسلسلي (باركود أو QR)</div>
         <button class="close-btn" id="cancelScanBtn">إلغاء</button>
     </div>
 </div>
@@ -412,6 +430,7 @@
         let currentActiveInput = null;
         let html5QrCode = null;
         let isScanning = false;
+        let currentCameraId = "environment"; // 'environment' للخلفية، 'user' للأمامية
 
         // تعيين التاريخ الحالي
         const topDateInput = document.getElementById('topDateInput');
@@ -433,7 +452,6 @@
             return maxNum + 1;
         }
 
-        // إنشاء خلية الرقم التسلسلي مع زر المسح
         function createSerialCellWithScanner(currentValue = '') {
             const wrapper = document.createElement('div');
             wrapper.className = 'serial-wrapper';
@@ -458,7 +476,6 @@
             return { wrapper, input };
         }
 
-        // إضافة صف جديد مع ترقيم تلقائي
         function addNewRow() {
             const newRow = document.createElement('tr');
             const tdUnit = document.createElement('td');
@@ -526,13 +543,13 @@
             }
         }
 
-        // فتح الكاميرا باستخدام html5-qrcode (يعمل على الهاتف والكمبيوتر)
+        // فتح الكاميرا
         async function openScannerModal() {
             if (!currentActiveInput) return;
             const modal = document.getElementById('cameraModal');
             modal.style.display = 'flex';
             
-            // تنظيف أي مسح سابق
+            // إيقاف أي مسح سابق
             if (html5QrCode && isScanning) {
                 try {
                     await html5QrCode.stop();
@@ -541,22 +558,22 @@
             }
             
             const readerDiv = document.getElementById('qr-reader');
-            readerDiv.innerHTML = ''; // مسح المحتوى
+            readerDiv.innerHTML = '';
             
             html5QrCode = new Html5Qrcode("qr-reader");
             const config = {
                 fps: 15,
-                qrbox: { width: 250, height: 250 },
+                qrbox: { width: 280, height: 280 },
                 aspectRatio: 1.0,
                 showTorchButtonIfSupported: true
             };
             
             try {
+                // محاولة استخدام الكاميرا الخلفية أولاً
                 await html5QrCode.start(
-                    { facingMode: "environment" }, // الكاميرا الخلفية للهواتف، للكمبيوتر会自动选择
+                    { facingMode: currentCameraId === "environment" ? "environment" : "user" },
                     config,
-                    (decodedText, decodedResult) => {
-                        // نجاح المسح
+                    (decodedText) => {
                         if (currentActiveInput) {
                             currentActiveInput.value = decodedText;
                             syncValuesToAttributes();
@@ -569,14 +586,75 @@
                         }
                     },
                     (errorMessage) => {
-                        // خطأ في المسح - نتجاهل الرسائل المتكررة عادة
-                        // console.log(errorMessage);
+                        // تجاهل أخطاء المسح المتكررة
                     }
                 );
                 isScanning = true;
+                document.getElementById('scanMessage').innerText = "الكاميرا تعمل - وجه الكاميرا إلى الرمز التسلسلي";
             } catch (err) {
                 console.error("خطأ في تشغيل الكاميرا:", err);
-                document.getElementById('scanMessage').innerText = "تعذر الوصول إلى الكاميرا، تأكد من منح الصلاحية.";
+                document.getElementById('scanMessage').innerHTML = "⚠️ تعذر الوصول إلى الكاميرا.<br>تأكد من منح صلاحية الكاميرا للموقع.";
+                // محاولة بديلة باستخدام كاميرا user
+                if (currentCameraId === "environment") {
+                    try {
+                        currentCameraId = "user";
+                        await html5QrCode.start(
+                            { facingMode: "user" },
+                            config,
+                            (decodedText) => {
+                                if (currentActiveInput) {
+                                    currentActiveInput.value = decodedText;
+                                    syncValuesToAttributes();
+                                    closeScannerModal();
+                                }
+                            },
+                            (errorMessage) => {}
+                        );
+                        isScanning = true;
+                        document.getElementById('scanMessage').innerHTML = "✅ الكاميرا الأمامية تعمل - وجه الكاميرا إلى الرمز";
+                    } catch(e2) {
+                        document.getElementById('scanMessage').innerHTML = "❌ لا يمكن الوصول إلى الكاميرا. تأكد من منح الصلاحية.";
+                    }
+                }
+            }
+        }
+
+        async function switchCamera() {
+            if (!html5QrCode || !isScanning) return;
+            // تبديل الكاميرا
+            currentCameraId = currentCameraId === "environment" ? "user" : "environment";
+            // إعادة التشغيل بالكاميرا الجديدة
+            try {
+                await html5QrCode.stop();
+                isScanning = false;
+            } catch(e) {}
+            
+            const readerDiv = document.getElementById('qr-reader');
+            readerDiv.innerHTML = '';
+            html5QrCode = new Html5Qrcode("qr-reader");
+            const config = {
+                fps: 15,
+                qrbox: { width: 280, height: 280 },
+                aspectRatio: 1.0
+            };
+            
+            try {
+                await html5QrCode.start(
+                    { facingMode: currentCameraId === "environment" ? "environment" : "user" },
+                    config,
+                    (decodedText) => {
+                        if (currentActiveInput) {
+                            currentActiveInput.value = decodedText;
+                            syncValuesToAttributes();
+                            closeScannerModal();
+                        }
+                    },
+                    (errorMessage) => {}
+                );
+                isScanning = true;
+                document.getElementById('scanMessage').innerText = "تم تبديل الكاميرا - وجه الكاميرا إلى الرمز";
+            } catch(err) {
+                document.getElementById('scanMessage').innerText = "فشل تبديل الكاميرا";
             }
         }
 
@@ -592,13 +670,17 @@
             const readerDiv = document.getElementById('qr-reader');
             if (readerDiv) readerDiv.innerHTML = '';
             currentActiveInput = null;
+            // إعادة تعيين الكاميرا إلى الخلفية للجلسة القادمة
+            currentCameraId = "environment";
         }
 
         function bindModalEvents() {
             const closeBtn = document.getElementById('closeModalBtn');
             const cancelBtn = document.getElementById('cancelScanBtn');
+            const switchBtn = document.getElementById('switchCameraBtn');
             if (closeBtn) closeBtn.onclick = closeScannerModal;
             if (cancelBtn) cancelBtn.onclick = closeScannerModal;
+            if (switchBtn) switchBtn.onclick = switchCamera;
             window.addEventListener('click', (e) => {
                 const modal = document.getElementById('cameraModal');
                 if (e.target === modal) closeScannerModal();
