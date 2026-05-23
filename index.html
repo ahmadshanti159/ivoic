@@ -259,7 +259,7 @@
             font-size: 11px;
         }
 
-        /* مودال الكاميرا - تصميم حديث */
+        /* مودال الكاميرا */
         .modal {
             display: none;
             position: fixed;
@@ -401,7 +401,7 @@
     </div>
 </div>
 
-<!-- مودال الكاميرا - نسخة مطابقة لكود React مع تحويله لـ JS -->
+<!-- مودال الكاميرا -->
 <div id="cameraModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
@@ -426,7 +426,7 @@
         
         // متغيرات الكاميرا
         let html5QrCode = null;
-        let currentCameraFacing = 'environment'; // 'environment' أو 'user'
+        let currentCameraFacing = 'environment';
         let isScanning = false;
         const qrRegionId = 'qr-reader';
 
@@ -440,7 +440,6 @@
             topDateInput.value = `${yyyy}-${mm}-${dd}`;
         }
 
-        // دالة للحصول على الرقم التالي في عمود #
         function getNextNumber() {
             const allNumInputs = document.querySelectorAll('#tableBody .num-input');
             let maxNum = 0;
@@ -449,6 +448,21 @@
                 if (!isNaN(val) && val > maxNum) maxNum = val;
             });
             return maxNum + 1;
+        }
+
+        // دالة عامة لربط حدث المسح بزر معين
+        function attachScanEventToButton(btn, inputElement) {
+            if (!btn) return;
+            // إزالة أي مستمع قديم
+            const newBtn = btn.cloneNode(true);
+            btn.parentNode.replaceChild(newBtn, btn);
+            newBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                currentActiveInput = inputElement;
+                openScannerModal();
+            });
+            return newBtn;
         }
 
         // إنشاء خلية الرقم التسلسلي مع زر المسح
@@ -465,18 +479,21 @@
             btn.className = 'barcode-btn';
             btn.innerHTML = '📷';
             btn.title = 'مسح الرمز التسلسلي';
+            
+            // ربط الحدث مباشرة
             btn.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 currentActiveInput = input;
                 openScannerModal();
             });
+            
             wrapper.appendChild(input);
             wrapper.appendChild(btn);
-            return { wrapper, input };
+            return { wrapper, input, btn };
         }
 
-        // إضافة صف جديد مع ترقيم تلقائي
+        // إضافة صف جديد
         function addNewRow() {
             const newRow = document.createElement('tr');
             const tdUnit = document.createElement('td');
@@ -487,7 +504,7 @@
             tdUnit.appendChild(unitInput);
             
             const tdSerial = document.createElement('td');
-            const { wrapper, input: serialInput } = createSerialCellWithScanner('');
+            const { wrapper, input: serialInput, btn } = createSerialCellWithScanner('');
             tdSerial.appendChild(wrapper);
             
             const tdType = document.createElement('td');
@@ -515,36 +532,18 @@
             newRow.appendChild(tdNature);
             newRow.appendChild(tdNum);
             tableBody.appendChild(newRow);
-            attachInputListeners(newRow);
-            syncValuesToAttributes();
-        }
-
-        function attachInputListeners(row) {
-            const inputs = row.querySelectorAll('input');
+            
+            // ربط المستمعات للحقول النصية
+            const inputs = newRow.querySelectorAll('input');
             inputs.forEach(inp => {
                 inp.addEventListener('change', syncValuesToAttributes);
                 inp.addEventListener('keyup', syncValuesToAttributes);
             });
-            const btns = row.querySelectorAll('.barcode-btn');
-            btns.forEach(btn => {
-                btn.removeEventListener('click', handleBarcodeClick);
-                btn.addEventListener('click', handleBarcodeClick);
-            });
-        }
-        
-        function handleBarcodeClick(e) {
-            e.preventDefault();
-            const wrapper = e.currentTarget.closest('.serial-wrapper');
-            if (wrapper) {
-                const serialInput = wrapper.querySelector('.serial-input');
-                if (serialInput) {
-                    currentActiveInput = serialInput;
-                    openScannerModal();
-                }
-            }
+            
+            syncValuesToAttributes();
         }
 
-        // ==================== دوال الكاميرا (مستوحاة من كود React) ====================
+        // ==================== دوال الكاميرا ====================
         async function startScanner() {
             if (!html5QrCode) {
                 html5QrCode = new Html5Qrcode(qrRegionId);
@@ -567,9 +566,7 @@
                             closeScannerModal();
                         }
                     },
-                    (errorMessage) => {
-                        // تجاهل أخطاء المسح المتكررة
-                    }
+                    (errorMessage) => {}
                 );
                 isScanning = true;
             } catch (err) {
@@ -600,7 +597,6 @@
             const modal = document.getElementById('cameraModal');
             modal.style.display = 'flex';
             
-            // تنظيف أي مسح سابق
             if (html5QrCode && isScanning) {
                 try {
                     await html5QrCode.stop();
@@ -608,11 +604,9 @@
                 isScanning = false;
             }
             
-            // إعادة تعيين عنصر الـ reader
             const readerDiv = document.getElementById(qrRegionId);
             if (readerDiv) readerDiv.innerHTML = '';
             
-            // بدء المسح
             await startScanner();
         }
 
@@ -635,13 +629,8 @@
             
             if (closeBtn) closeBtn.onclick = closeScannerModal;
             if (cancelBtn) cancelBtn.onclick = closeScannerModal;
-            if (switchBtn) {
-                switchBtn.onclick = () => {
-                    switchCamera();
-                };
-            }
+            if (switchBtn) switchBtn.onclick = switchCamera;
             
-            // إغلاق عند النقر خارج المودال
             window.addEventListener('click', (e) => {
                 const modal = document.getElementById('cameraModal');
                 if (e.target === modal) closeScannerModal();
@@ -724,7 +713,7 @@
             setTimeout(() => window.print(), 120);
         };
 
-        // ==================== ربط الأزرار ====================
+        // ربط الأزرار الرئيسية
         const saveBtn = document.getElementById('saveImageBtn');
         if (saveBtn) {
             const newSave = saveBtn.cloneNode(true);
@@ -739,39 +728,57 @@
         }
         if (addRowBtn) addRowBtn.addEventListener('click', addNewRow);
         
-        function rebindAllBarcodeBtns() {
-            const btns = document.querySelectorAll('.barcode-btn');
-            btns.forEach(btn => {
-                btn.removeEventListener('click', handleBarcodeClick);
-                btn.addEventListener('click', handleBarcodeClick);
-            });
-        }
-        
+        // إعداد الصف الأول
         const firstSerialCell = document.querySelector('#tableBody tr:first-child .serial-cell');
         if (firstSerialCell) {
             const existingWrapper = firstSerialCell.querySelector('.serial-wrapper');
             if (!existingWrapper) {
                 const oldInput = firstSerialCell.querySelector('.serial-input');
                 const oldValue = oldInput ? oldInput.value : '';
-                const { wrapper, input } = createSerialCellWithScanner(oldValue);
+                const { wrapper, input, btn } = createSerialCellWithScanner(oldValue);
                 firstSerialCell.innerHTML = '';
                 firstSerialCell.appendChild(wrapper);
                 if (oldInput) input.value = oldValue;
             } else {
                 const btn = existingWrapper.querySelector('.barcode-btn');
-                if (btn) {
-                    btn.removeEventListener('click', handleBarcodeClick);
-                    btn.addEventListener('click', handleBarcodeClick);
+                const inp = existingWrapper.querySelector('.serial-input');
+                if (btn && inp) {
+                    const newBtn = btn.cloneNode(true);
+                    btn.parentNode.replaceChild(newBtn, btn);
+                    newBtn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        currentActiveInput = inp;
+                        openScannerModal();
+                    });
                 }
             }
         }
-        rebindAllBarcodeBtns();
         
+        // مراقبة التغييرات في الجدول لإعادة ربط الأزرار الجديدة
         const observer = new MutationObserver(() => {
-            rebindAllBarcodeBtns();
+            // ربط جميع أزرار الباركود في الجدول
+            const allRows = document.querySelectorAll('#tableBody tr');
+            allRows.forEach(row => {
+                const wrapper = row.querySelector('.serial-wrapper');
+                if (wrapper) {
+                    const btn = wrapper.querySelector('.barcode-btn');
+                    const inp = wrapper.querySelector('.serial-input');
+                    if (btn && inp && !btn.hasAttribute('data-scanner-bound')) {
+                        btn.setAttribute('data-scanner-bound', 'true');
+                        btn.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            currentActiveInput = inp;
+                            openScannerModal();
+                        });
+                    }
+                }
+            });
             syncValuesToAttributes();
         });
         observer.observe(tableBody, { childList: true, subtree: true });
+        
         bindModalEvents();
         
         const fullTextarea = document.getElementById('fullReceiptText');
@@ -788,9 +795,26 @@
             topDateInput.addEventListener('keyup', syncValuesToAttributes);
         }
         
+        // ربط أزرار الباركود الموجودة مبدئياً
+        const existingBtns = document.querySelectorAll('.barcode-btn');
+        existingBtns.forEach(btn => {
+            if (!btn.hasAttribute('data-scanner-bound')) {
+                btn.setAttribute('data-scanner-bound', 'true');
+                const wrapper = btn.closest('.serial-wrapper');
+                const inp = wrapper ? wrapper.querySelector('.serial-input') : null;
+                if (inp) {
+                    btn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        currentActiveInput = inp;
+                        openScannerModal();
+                    });
+                }
+            }
+        });
+        
         syncValuesToAttributes();
         
-        // تنظيف عند إغلاق الصفحة
         window.addEventListener('beforeunload', () => {
             if (html5QrCode && isScanning) {
                 html5QrCode.stop().catch(e=>{});
