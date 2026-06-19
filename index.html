@@ -29,16 +29,15 @@
             text-align: center;
             margin-bottom: 20px;
             display: flex;
-            gap: 15px;
+            gap: 10px;
             justify-content: center;
             flex-wrap: wrap;
         }
-        .btn-download, .btn-print {
-            background-color: #1e466e;
+        .btn-download, .btn-print, .btn-saved {
             color: white;
             border: none;
-            padding: 12px 30px;
-            font-size: 16px;
+            padding: 12px 25px;
+            font-size: 15px;
             font-weight: 600;
             border-radius: 8px;
             cursor: pointer;
@@ -46,15 +45,18 @@
             transition: all 0.2s;
             font-family: inherit;
         }
+        .btn-download {
+            background-color: #1e466e;
+        }
         .btn-print {
             background-color: #2c7a4d;
         }
-        .btn-download:hover {
-            background-color: #0f2c48;
+        .btn-saved {
+            background-color: #8b6b3d;
         }
-        .btn-print:hover {
-            background-color: #1e5a3a;
-        }
+        .btn-download:hover { background-color: #0f2c48; }
+        .btn-print:hover { background-color: #1e5a3a; }
+        .btn-saved:hover { background-color: #6d4f2a; }
 
         .report-page {
             background: white;
@@ -105,22 +107,30 @@
         .date-under-header {
             text-align: left;
             padding: 6px 28px 0 28px;
-            font-size: 11px;
+            font-size: 13px;
             color: #4a627a;
             background-color: white;
         }
-        .date-under-header span { font-weight: 500; }
-        .date-under-header input {
-            border: none;
-            border-bottom: 1px dashed #9aaebf;
-            background: transparent;
-            font-size: 11px;
-            padding: 2px 4px;
-            width: 110px;
-            text-align: center;
+        .date-under-header span { 
+            font-weight: 600; 
             color: #1e466e;
         }
-        .date-under-header input:focus { border-bottom: 1px solid #1e466e; outline: none; }
+        .date-under-header input {
+            border: none;
+            border-bottom: 1.5px solid #1e466e;
+            background: transparent;
+            font-size: 13px;
+            padding: 4px 8px;
+            width: 130px;
+            text-align: center;
+            color: #1e466e;
+            font-weight: 500;
+        }
+        .date-under-header input:focus { 
+            border-bottom: 2px solid #4a90d9; 
+            outline: none; 
+            background: #f8f9fa;
+        }
 
         .report-content {
             padding: 12px 28px 25px 28px;
@@ -151,6 +161,7 @@
             line-height: 1.6;
             direction: rtl;
             font-family: inherit;
+            min-height: 50px;
         }
         .receipt-text-editable:focus { border-bottom: 1px solid #1e466e; outline: none; }
 
@@ -167,11 +178,14 @@
             text-align: center;
             vertical-align: middle;
         }
-        .devices-table th:nth-child(1), .devices-table td:nth-child(1) { width: 12%; }
-        .devices-table th:nth-child(2), .devices-table td:nth-child(2) { width: 35%; }
-        .devices-table th:nth-child(3), .devices-table td:nth-child(3) { width: 20%; }
-        .devices-table th:nth-child(4), .devices-table td:nth-child(4) { width: 20%; }
-        .devices-table th:nth-child(5), .devices-table td:nth-child(5) { width: 13%; }
+        /* ترتيب الأعمدة: # ثم العدد ثم الرقم التسلسلي ثم نوع الجهاز ثم طبيعة الجهاز ثم الوجهة ثم حذف */
+        .devices-table th:nth-child(1), .devices-table td:nth-child(1) { width: 6%; }
+        .devices-table th:nth-child(2), .devices-table td:nth-child(2) { width: 8%; }
+        .devices-table th:nth-child(3), .devices-table td:nth-child(3) { width: 32%; }
+        .devices-table th:nth-child(4), .devices-table td:nth-child(4) { width: 14%; }
+        .devices-table th:nth-child(5), .devices-table td:nth-child(5) { width: 14%; }
+        .devices-table th:nth-child(6), .devices-table td:nth-child(6) { width: 18%; }
+        .devices-table th:nth-child(7), .devices-table td:nth-child(7) { width: 8%; }
         
         .devices-table th { background-color: #eef2f7; font-weight: 700; color: #1e466e; font-size: 13px; }
         .devices-table td { background-color: #fff; }
@@ -185,19 +199,40 @@
             outline: none;
             font-family: inherit;
         }
-        /* تمييز الحقل المكرر باللون الأحمر */
-        .serial-input-duplicate {
-            background-color: #ffe0e0 !important;
-            color: #c00 !important;
-            border-bottom: 1px solid #c00 !important;
+        /* إخفاء النصوص الإرشادية عند الطباعة */
+        @media print {
+            .devices-table td input::placeholder {
+                color: transparent !important;
+            }
+            .devices-table td input {
+                color: #000 !important;
+                font-weight: 500;
+            }
         }
+        /* إخفاء النصوص الإرشادية عند حفظ الصورة */
+        .print-mode .devices-table td input::placeholder {
+            color: transparent !important;
+        }
+        .print-mode .devices-table td input {
+            color: #000 !important;
+            font-weight: 500;
+        }
+        
+        /* حقل الرقم بدون علامة # */
+        .num-input {
+            font-weight: 600;
+            color: #1a3a5f;
+        }
+        
+        /* حقل الرقم التسلسلي مع الشرطات الشفافة */
         .serial-wrapper {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 6px;
+            gap: 2px;
             direction: ltr;
             width: 100%;
+            position: relative;
         }
         .serial-wrapper input { 
             flex: 1; 
@@ -208,74 +243,187 @@
             font-size: 13px;
             text-align: center;
             transition: 0.2s;
+            letter-spacing: 2px;
+            font-family: 'Courier New', monospace;
+            position: relative;
+            z-index: 2;
+            color: #1a3a5f;
         }
         .serial-wrapper input:focus {
             outline: none;
             background: #f0f4f8;
         }
+        .serial-wrapper .serial-placeholder {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #d0d7de;
+            font-size: 13px;
+            letter-spacing: 3px;
+            font-family: 'Courier New', monospace;
+            pointer-events: none;
+            z-index: 1;
+            direction: ltr;
+            white-space: nowrap;
+        }
+        .serial-wrapper input:focus ~ .serial-placeholder,
+        .serial-wrapper input:not(:placeholder-shown) ~ .serial-placeholder {
+            display: none;
+        }
+        .serial-wrapper input::placeholder {
+            color: transparent;
+        }
+        /* إخفاء الشرطات عند الطباعة */
+        @media print {
+            .serial-wrapper .serial-placeholder {
+                display: none !important;
+            }
+        }
+        .print-mode .serial-wrapper .serial-placeholder {
+            display: none !important;
+        }
+        
+        .serial-input-duplicate {
+            background-color: #ffe0e0 !important;
+            color: #c00 !important;
+            border-bottom: 1px solid #c00 !important;
+        }
+        
         .barcode-btn {
             background: #eef2f7;
             border: none;
             cursor: pointer;
-            font-size: 18px;
+            font-size: 16px;
             border-radius: 6px;
-            width: 30px;
-            height: 30px;
+            width: 28px;
+            height: 28px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: 0.2s;
+            position: relative;
+            z-index: 3;
+        }
+        .barcode-btn:hover { background-color: #d4dfec; }
+        @media print {
+            .barcode-btn { display: none !important; }
+        }
+        .print-mode .barcode-btn { display: none !important; }
+        
+        .delete-row-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            border-radius: 6px;
+            width: 28px;
+            height: 28px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
             transition: 0.2s;
         }
-        .barcode-btn:hover { background-color: #d4dfec; }
+        .delete-row-btn:hover { background-color: #c82333; }
+        
+        @media print {
+            .devices-table th:nth-child(7), 
+            .devices-table td:nth-child(7),
+            .delete-row-btn {
+                display: none !important;
+            }
+        }
+        .print-hide {
+            display: none !important;
+        }
+        
         .add-row-btn {
             background-color: #1e466e;
             color: white;
             border: none;
-            padding: 5px 14px;
-            font-size: 12px;
+            padding: 8px 20px;
+            font-size: 14px;
             border-radius: 6px;
             cursor: pointer;
             margin-bottom: 12px;
             display: inline-block;
+            transition: 0.2s;
+            font-weight: 600;
         }
+        .add-row-btn:hover { background-color: #0f2c48; }
+        @media print {
+            .add-row-btn, .btn-wrapper { display: none !important; }
+        }
+        .print-mode .add-row-btn, .print-mode .btn-wrapper { display: none !important; }
+        
         .btn-wrapper { text-align: left; margin-bottom: 8px; }
 
         .receiver-section {
             width: 100%;
-            max-width: 360px;
-            margin-top: 6px;
-            border-top: 1px solid #ccd7e4;
-            padding-top: 8px;
+            max-width: 450px;
+            margin-top: 10px;
+            border-top: 2px solid #1e466e;
+            padding-top: 15px;
         }
         .signature-line {
             display: flex;
-            align-items: baseline;
-            gap: 5px;
-            margin-bottom: 4px;
-            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            flex-wrap: nowrap;
         }
-        .signature-line label { font-weight: 700; font-size: 11px; color: #1e3a5f; min-width: 72px; }
+        .signature-line label { 
+            font-weight: 700; 
+            font-size: 13px; 
+            color: #1e3a5f; 
+            min-width: 130px;
+            flex-shrink: 0;
+        }
         .signature-line input {
             flex: 1;
             border: none;
-            border-bottom: 1px solid #9aaebf;
-            padding: 3px;
-            font-size: 11px;
+            border-bottom: 2px solid #1e466e;
+            padding: 6px 8px;
+            font-size: 13px;
+            min-width: 0;
+            background: transparent;
+            transition: 0.2s;
+        }
+        .signature-line input:focus {
+            border-bottom-color: #4a90d9;
+            outline: none;
+            background: #f8f9fa;
         }
         .signature-field {
-            margin-top: 4px;
+            margin-top: 8px;
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 10px;
         }
-        .signature-field label { font-weight: 700; font-size: 11px; color: #1e3a5f; min-width: 58px; }
+        .signature-field label { 
+            font-weight: 700; 
+            font-size: 13px; 
+            color: #1e3a5f; 
+            min-width: 130px;
+            flex-shrink: 0;
+        }
         .signature-field input {
             flex: 1;
             border: none;
-            border-bottom: 1px solid #9aaebf;
-            padding: 3px;
-            font-size: 11px;
+            border-bottom: 2px solid #1e466e;
+            padding: 6px 8px;
+            font-size: 13px;
+            min-width: 0;
+            background: transparent;
+            transition: 0.2s;
+        }
+        .signature-field input:focus {
+            border-bottom-color: #4a90d9;
+            outline: none;
+            background: #f8f9fa;
         }
 
         /* مودال الكاميرا */
@@ -346,21 +494,210 @@
             border: 1px solid #ccc;
         }
 
+        /* مودال السندات المحفوظة */
+        .saved-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 3000;
+            align-items: center;
+            justify-content: center;
+            direction: rtl;
+        }
+        .saved-modal-content {
+            background: white;
+            border-radius: 24px;
+            padding: 30px;
+            width: 90%;
+            max-width: 700px;
+            max-height: 80vh;
+            overflow-y: auto;
+            margin: 0 16px;
+        }
+        .saved-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #1e466e;
+            padding-bottom: 15px;
+        }
+        .saved-modal-header h3 {
+            font-size: 22px;
+            font-weight: bold;
+            color: #1e466e;
+        }
+        .saved-modal-header button {
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            color: #666;
+            transition: 0.2s;
+        }
+        .saved-modal-header button:hover { color: #c00; }
+        .saved-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            border-bottom: 1px solid #e0e4e8;
+            transition: 0.2s;
+            cursor: pointer;
+        }
+        .saved-item:hover { background-color: #f0f4f8; }
+        .saved-item-info {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .saved-item-number {
+            font-weight: 700;
+            color: #1e466e;
+            font-size: 14px;
+            min-width: 80px;
+        }
+        .saved-item-date {
+            color: #4a627a;
+            font-size: 13px;
+        }
+        .saved-item-count {
+            background: #eef2f7;
+            padding: 2px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            color: #1e466e;
+        }
+        .saved-item-delete {
+            background: none;
+            border: none;
+            color: #dc3545;
+            cursor: pointer;
+            font-size: 18px;
+            padding: 0 10px;
+            transition: 0.2s;
+        }
+        .saved-item-delete:hover { color: #c82333; transform: scale(1.2); }
+        .no-saved {
+            text-align: center;
+            color: #8a9aa8;
+            padding: 40px;
+            font-size: 16px;
+        }
+
+        /* مودال معاينة الصورة */
+        .preview-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 4000;
+            align-items: center;
+            justify-content: center;
+            direction: ltr;
+        }
+        .preview-modal-content {
+            background: white;
+            border-radius: 24px;
+            padding: 25px;
+            width: 95%;
+            max-width: 900px;
+            max-height: 90vh;
+            overflow-y: auto;
+            text-align: center;
+        }
+        .preview-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #1e466e;
+        }
+        .preview-modal-header h3 {
+            font-size: 20px;
+            font-weight: bold;
+            color: #1e466e;
+        }
+        .preview-modal-header button {
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            color: #666;
+            transition: 0.2s;
+        }
+        .preview-modal-header button:hover { color: #c00; }
+        .preview-image-container {
+            max-height: 65vh;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 10px;
+            background: #f8f9fa;
+        }
+        .preview-image-container img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+        }
+        .preview-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        .preview-buttons button {
+            padding: 10px 30px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: 0.2s;
+        }
+        .btn-confirm-download {
+            background-color: #1e466e;
+            color: white;
+        }
+        .btn-confirm-download:hover { background-color: #0f2c48; }
+        .btn-cancel-preview {
+            background-color: #dc3545;
+            color: white;
+        }
+        .btn-cancel-preview:hover { background-color: #c82333; }
+
         @media print {
-            .btn-container, .add-row-btn, .btn-wrapper, .barcode-btn, .modal { display: none !important; }
+            .btn-container, .add-row-btn, .btn-wrapper, .barcode-btn, .delete-row-btn, .modal, .saved-modal, .preview-modal { display: none !important; }
             body { background: white; padding: 0; }
             @page { size: A4; margin: 0mm; }
             .report-page { width: 100%; min-height: 297mm; box-shadow: none; }
             .devices-table th, .devices-table td { border: 1px solid #000 !important; }
-            .receiver-section { max-width: 360px; }
+            .devices-table th:nth-child(7), .devices-table td:nth-child(7) { display: none !important; }
+            .receiver-section { max-width: 450px; }
             .receipt-text-editable { border-bottom: none !important; resize: none !important; }
             .palestine-flag { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             .date-under-header input { border-bottom: none !important; }
+            .signature-line input, .signature-field input { border-bottom: none !important; }
+            .serial-wrapper .serial-placeholder { display: none !important; }
+            .devices-table td input::placeholder {
+                color: transparent !important;
+            }
+            .devices-table td input {
+                color: #000 !important;
+                font-weight: 500;
+            }
         }
         @media (max-width: 220mm) and (not print) {
             .report-page, .btn-container { width: 100%; }
             .receiver-section { max-width: 100%; }
             .devices-table { table-layout: auto; }
+            .signature-line, .signature-field { flex-wrap: wrap; }
+            .signature-line label, .signature-field label { min-width: 100px; }
         }
     </style>
 </head>
@@ -369,6 +706,7 @@
 <div class="btn-container">
     <button class="btn-download" id="saveImageBtn">📸 حفظ كصورة</button>
     <button class="btn-print" id="printBtn">🖨️ طباعة التقرير</button>
+    <button class="btn-saved" id="savedBtn">📋 السندات المحفوظة</button>
 </div>
 
 <div class="report-page" id="reportContainer">
@@ -395,31 +733,46 @@
         </div>
         <div class="separator-line"></div>
     </div>
-    <div class="date-under-header"><span>التاريخ: </span><input type="text" id="topDateInput" placeholder="yyyy-mm-dd" value=""></div>
+    <div class="date-under-header">
+        <span>التاريخ: </span><input type="text" id="topDateInput" placeholder="yyyy-mm-dd" value="">
+    </div>
     <div class="report-content">
         <div class="receipt-title">وصل استلام</div>
         <textarea id="fullReceiptText" class="receipt-text-editable" rows="2">استلمت أنا الموقع أدناه الأجهزة الواردة في الجدول التالي من إدارة الاتصالات وتكنولوجيا المعلومات :-</textarea>
         <div class="btn-wrapper"><button type="button" class="add-row-btn" id="addRowBtn">+ إضافة جهاز</button></div>
         <table class="devices-table" id="devicesTable">
-            <thead><tr><th>العدد</th><th>الرقم التسلسلي <span style="font-size:10px;"></span></th><th>نوع الجهاز</th><th>طبيعة الجهاز</th><th>#</th></tr></thead>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>العدد</th>
+                    <th>الرقم التسلسلي</th>
+                    <th>نوع الجهاز</th>
+                    <th>طبيعة الجهاز</th>
+                    <th>الوجهة</th>
+                    <th class="hide-print">حذف</th>
+                </tr>
+            </thead>
             <tbody id="tableBody">
                 <tr>
+                    <td><input type="text" class="num-input" value="1" placeholder="#"></td>
                     <td><input type="text" class="unit-input" value="1" placeholder="العدد"></td>
                     <td class="serial-cell">
                         <div class="serial-wrapper">
-                            <input type="text" class="serial-input" value="123123123" placeholder="الرقم التسلسلي">
+                            <input type="text" class="serial-input" placeholder=" " value="">
+                            <span class="serial-placeholder">---- ---- ---- ----</span>
                             <button type="button" class="barcode-btn" title="مسح الرمز التسلسلي">📷</button>
                         </div>
                     </td>
                     <td><input type="text" class="type-input" value="hp" placeholder="نوع الجهاز"></td>
                     <td><input type="text" class="nature-input" value="شاشة" placeholder="طبيعة الجهاز"></td>
-                    <td><input type="text" class="num-input" value="1" placeholder="#"></td>
+                    <td><input type="text" class="destination-input" placeholder="الوجهة"></td>
+                    <td class="hide-print"><button type="button" class="delete-row-btn" title="حذف الجهاز">✕</button></td>
                 </tr>
             </tbody>
         </table>
         <div class="receiver-section">
             <div class="signature-line"><label>رتبة واسم المستلم :</label><input type="text" id="receiverName" placeholder="الرتبة / الاسم الكامل"></div>
-            <div class="signature-line"><label>الإدارة :</label><input type="text" id="receiverDept" placeholder="الإدارة التابع لها"></div>
+            <div class="signature-line"><label>الإدارة :</label><input type="text" id="receiverDept" placeholder="الإدارة"></div>
             <div class="signature-field"><label>التوقيع :</label><input type="text" id="receiverSignature" placeholder="التوقيع أو اسم الموقع"></div>
         </div>
     </div>
@@ -440,157 +793,266 @@
     </div>
 </div>
 
+<!-- مودال السندات المحفوظة -->
+<div id="savedModal" class="saved-modal">
+    <div class="saved-modal-content">
+        <div class="saved-modal-header">
+            <h3>📋 السندات المحفوظة</h3>
+            <button id="closeSavedModalBtn">✕</button>
+        </div>
+        <div id="savedListContainer">
+            <!-- سيتم عرض السندات هنا -->
+        </div>
+    </div>
+</div>
+
+<!-- مودال معاينة الصورة -->
+<div id="previewModal" class="preview-modal">
+    <div class="preview-modal-content">
+        <div class="preview-modal-header">
+            <h3>📸 معاينة الصورة</h3>
+            <button id="closePreviewBtn">✕</button>
+        </div>
+        <div class="preview-image-container">
+            <img id="previewImage" src="" alt="معاينة الصورة">
+        </div>
+        <div class="preview-buttons">
+            <button class="btn-confirm-download" id="confirmDownloadBtn">✅ تأكيد الحفظ</button>
+            <button class="btn-cancel-preview" id="cancelPreviewBtn">❌ إلغاء</button>
+        </div>
+    </div>
+</div>
+
 <script>
     (function() {
         // ==================== العناصر الأساسية ====================
         const reportElement = document.getElementById('reportContainer');
         const tableBody = document.getElementById('tableBody');
         const addRowBtn = document.getElementById('addRowBtn');
+        const topDateInput = document.getElementById('topDateInput');
         
-        // متغير لتخزين حقل الإدخال النشط
         let currentActiveInput = null;
+        let currentReceiptId = null;
+        let previewCanvasData = null;
         
-        // متغيرات الكاميرا
         let html5QrCode = null;
         let currentCameraFacing = 'environment';
         let isScanning = false;
         const qrRegionId = 'qr-reader';
 
-        // تعيين التاريخ الحالي
-        const topDateInput = document.getElementById('topDateInput');
-        if (topDateInput) {
-            const today = new Date();
-            const yyyy = today.getFullYear();
-            const mm = String(today.getMonth() + 1).padStart(2, '0');
-            const dd = String(today.getDate()).padStart(2, '0');
-            topDateInput.value = `${yyyy}-${mm}-${dd}`;
+        // ==================== تعيين التاريخ تلقائياً ====================
+        function setCurrentDate() {
+            if (topDateInput) {
+                const today = new Date();
+                const yyyy = today.getFullYear();
+                const mm = String(today.getMonth() + 1).padStart(2, '0');
+                const dd = String(today.getDate()).padStart(2, '0');
+                if (!topDateInput.value) {
+                    topDateInput.value = `${yyyy}-${mm}-${dd}`;
+                }
+            }
         }
 
-        // دالة للتحقق من تكرار الرقم التسلسلي
-        function checkSerialDuplicate(serialInputElement, serialValue) {
-            if (!serialValue || serialValue.trim() === '') return false;
+        // ==================== دالة استخراج الرقم التسلسلي ====================
+        function extractSerialNumber(text) {
+            if (!text || text.trim() === '') return text;
             
-            const allSerialInputs = document.querySelectorAll('#tableBody .serial-input');
-            let isDuplicate = false;
+            let cleanText = text.trim();
             
-            allSerialInputs.forEach(input => {
-                if (input !== serialInputElement && input.value.trim() === serialValue.trim()) {
-                    isDuplicate = true;
+            if (cleanText.includes('...') || cleanText.includes('---') || 
+                cleanText.includes('.....') || cleanText.includes('-----')) {
+                const matches = cleanText.match(/[A-Za-z0-9]/g);
+                if (matches) {
+                    return matches.join('');
                 }
-            });
-            
-            if (isDuplicate) {
-                serialInputElement.classList.add('serial-input-duplicate');
-                alert(`⚠️ الرقم التسلسلي "${serialValue}" موجود مسبقاً في هذا الوصل!`);
-            } else {
-                serialInputElement.classList.remove('serial-input-duplicate');
             }
             
-            return isDuplicate;
+            const match = cleanText.match(/[A-Za-z0-9]+/);
+            if (match) {
+                return match[0];
+            }
+            
+            if (cleanText.length > 20) {
+                return cleanText.substring(0, 20);
+            }
+            
+            return cleanText;
         }
 
-        // دالة للحصول على الرقم التالي في عمود #
-        function getNextNumber() {
-            const allNumInputs = document.querySelectorAll('#tableBody .num-input');
-            let maxNum = 0;
-            allNumInputs.forEach(inp => {
-                let val = parseInt(inp.value, 10);
-                if (!isNaN(val) && val > maxNum) maxNum = val;
-            });
+        // ==================== دوال الحفظ في LocalStorage ====================
+        function getSavedReceipts() {
+            try {
+                return JSON.parse(localStorage.getItem('receipts')) || [];
+            } catch {
+                return [];
+            }
+        }
+
+        function saveReceipts(receipts) {
+            localStorage.setItem('receipts', JSON.stringify(receipts));
+        }
+
+        function getNextReceiptNumber() {
+            const receipts = getSavedReceipts();
+            if (receipts.length === 0) return 1;
+            const maxNum = Math.max(...receipts.map(r => r.number || 0));
             return maxNum + 1;
         }
 
-        // إنشاء خلية الرقم التسلسلي مع زر المسح
-        function createSerialCellWithScanner(currentValue = '') {
-            const wrapper = document.createElement('div');
-            wrapper.className = 'serial-wrapper';
-            const input = document.createElement('input');
-            input.type = 'text';
-            input.className = 'serial-input';
-            input.placeholder = 'الرقم التسلسلي';
-            input.value = currentValue;
+        function saveCurrentReceipt() {
+            const receipts = getSavedReceipts();
+            const receiptData = collectReceiptData();
             
-            // إضافة مستمع للتحقق من التكرار عند تغيير القيمة
-            input.addEventListener('change', function() {
-                checkSerialDuplicate(this, this.value);
-                syncValuesToAttributes();
-            });
-            input.addEventListener('keyup', function() {
-                if (!this.value || this.value.trim() === '') {
-                    this.classList.remove('serial-input-duplicate');
-                } else {
-                    // التحقق من التكرار بعد الكتابة
-                    checkSerialDuplicate(this, this.value);
+            if (currentReceiptId) {
+                const index = receipts.findIndex(r => r.id === currentReceiptId);
+                if (index !== -1) {
+                    receipts[index] = receiptData;
+                    saveReceipts(receipts);
+                    return;
                 }
-                syncValuesToAttributes();
-            });
+            }
             
-            const btn = document.createElement('button');
-            btn.type = 'button';
-            btn.className = 'barcode-btn';
-            btn.innerHTML = '📷';
-            btn.title = 'مسح الرمز التسلسلي';
-            
-            btn.addEventListener('click', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                currentActiveInput = input;
-                openScannerModal();
-            });
-            
-            wrapper.appendChild(input);
-            wrapper.appendChild(btn);
-            return { wrapper, input, btn };
+            receiptData.id = Date.now().toString();
+            receiptData.number = getNextReceiptNumber();
+            receipts.push(receiptData);
+            saveReceipts(receipts);
+            currentReceiptId = receiptData.id;
         }
 
-        // إضافة صف جديد
-        function addNewRow() {
+        function collectReceiptData() {
+            const rows = document.querySelectorAll('#tableBody tr');
+            const devices = [];
+            rows.forEach(row => {
+                const num = row.querySelector('.num-input')?.value || '';
+                const unit = row.querySelector('.unit-input')?.value || '';
+                const serial = row.querySelector('.serial-input')?.value || '';
+                const type = row.querySelector('.type-input')?.value || '';
+                const nature = row.querySelector('.nature-input')?.value || '';
+                const destination = row.querySelector('.destination-input')?.value || '';
+                devices.push({ num, unit, serial, type, nature, destination });
+            });
+            
+            return {
+                date: document.getElementById('topDateInput')?.value || '',
+                text: document.getElementById('fullReceiptText')?.value || '',
+                devices: devices,
+                receiverName: document.getElementById('receiverName')?.value || '',
+                receiverDept: document.getElementById('receiverDept')?.value || '',
+                receiverSignature: document.getElementById('receiverSignature')?.value || ''
+            };
+        }
+
+        function loadReceipt(receipt) {
+            currentReceiptId = receipt.id;
+            
+            document.getElementById('topDateInput').value = receipt.date || '';
+            document.getElementById('fullReceiptText').value = receipt.text || '';
+            
+            tableBody.innerHTML = '';
+            if (receipt.devices && receipt.devices.length > 0) {
+                receipt.devices.forEach((device, index) => {
+                    addRowWithData(device, index);
+                });
+            } else {
+                addRowWithData({ num: '1', unit: '1', serial: '', type: '', nature: '', destination: '' }, 0);
+            }
+            
+            document.getElementById('receiverName').value = receipt.receiverName || '';
+            document.getElementById('receiverDept').value = receipt.receiverDept || '';
+            document.getElementById('receiverSignature').value = receipt.receiverSignature || '';
+            
+            updateSerialNumbers();
+            syncValuesToAttributes();
+        }
+
+        function addRowWithData(data, index) {
             const newRow = document.createElement('tr');
+            
+            const tdNum = document.createElement('td');
+            const numInput = document.createElement('input');
+            numInput.type = 'text';
+            numInput.className = 'num-input';
+            numInput.placeholder = '#';
+            numInput.value = data.num || (index + 1).toString();
+            tdNum.appendChild(numInput);
+            
             const tdUnit = document.createElement('td');
             const unitInput = document.createElement('input');
             unitInput.type = 'text';
             unitInput.className = 'unit-input';
             unitInput.placeholder = 'العدد';
+            unitInput.value = data.unit || '1';
             tdUnit.appendChild(unitInput);
             
             const tdSerial = document.createElement('td');
-            const { wrapper, input: serialInput, btn } = createSerialCellWithScanner('');
+            const { wrapper, input: serialInput, btn, placeholder } = createSerialCellWithScanner(data.serial || '');
             tdSerial.appendChild(wrapper);
             
             const tdType = document.createElement('td');
             const typeInput = document.createElement('input');
             typeInput.className = 'type-input';
             typeInput.placeholder = 'نوع الجهاز';
+            typeInput.value = data.type || '';
             tdType.appendChild(typeInput);
             
             const tdNature = document.createElement('td');
             const natureInput = document.createElement('input');
             natureInput.className = 'nature-input';
             natureInput.placeholder = 'طبيعة الجهاز';
+            natureInput.value = data.nature || '';
             tdNature.appendChild(natureInput);
             
-            const tdNum = document.createElement('td');
-            const numInput = document.createElement('input');
-            numInput.className = 'num-input';
-            numInput.placeholder = '#';
-            numInput.value = getNextNumber().toString();
-            tdNum.appendChild(numInput);
+            const tdDestination = document.createElement('td');
+            const destinationInput = document.createElement('input');
+            destinationInput.className = 'destination-input';
+            destinationInput.placeholder = 'الوجهة';
+            destinationInput.value = data.destination || '';
+            tdDestination.appendChild(destinationInput);
             
+            const tdDelete = document.createElement('td');
+            tdDelete.className = 'hide-print';
+            const deleteBtn = document.createElement('button');
+            deleteBtn.type = 'button';
+            deleteBtn.className = 'delete-row-btn';
+            deleteBtn.innerHTML = '✕';
+            deleteBtn.title = 'حذف الجهاز';
+            deleteBtn.addEventListener('click', function() {
+                deleteRow(this);
+            });
+            tdDelete.appendChild(deleteBtn);
+            
+            newRow.appendChild(tdNum);
             newRow.appendChild(tdUnit);
             newRow.appendChild(tdSerial);
             newRow.appendChild(tdType);
             newRow.appendChild(tdNature);
-            newRow.appendChild(tdNum);
+            newRow.appendChild(tdDestination);
+            newRow.appendChild(tdDelete);
+            
             tableBody.appendChild(newRow);
             
-            // ربط المستمعات للحقول النصية
             const inputs = newRow.querySelectorAll('input');
             inputs.forEach(inp => {
-                inp.addEventListener('change', syncValuesToAttributes);
-                inp.addEventListener('keyup', syncValuesToAttributes);
+                inp.addEventListener('change', () => { syncValuesToAttributes(); autoSave(); });
+                inp.addEventListener('keyup', () => { syncValuesToAttributes(); autoSave(); });
             });
             
-            syncValuesToAttributes();
+            const barcodeBtn = newRow.querySelector('.barcode-btn');
+            if (barcodeBtn) {
+                barcodeBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    currentActiveInput = newRow.querySelector('.serial-input');
+                    openScannerModal();
+                });
+            }
+        }
+
+        function autoSave() {
+            clearTimeout(window._autoSaveTimer);
+            window._autoSaveTimer = setTimeout(() => {
+                saveCurrentReceipt();
+            }, 500);
         }
 
         // ==================== دوال الكاميرا ====================
@@ -611,13 +1073,14 @@
                     config,
                     (decodedText) => {
                         if (currentActiveInput) {
-                            // التحقق من التكرار قبل تعبئة القيمة
-                            const isDuplicate = checkSerialDuplicate(currentActiveInput, decodedText);
+                            const serialNumber = extractSerialNumber(decodedText);
+                            const isDuplicate = checkSerialDuplicate(currentActiveInput, serialNumber);
                             if (!isDuplicate) {
-                                currentActiveInput.value = decodedText;
+                                currentActiveInput.value = serialNumber;
                                 currentActiveInput.classList.remove('serial-input-duplicate');
                             }
                             syncValuesToAttributes();
+                            autoSave();
                             closeScannerModal();
                         }
                     },
@@ -677,22 +1140,213 @@
             currentActiveInput = null;
         }
 
-        function bindModalEvents() {
-            const closeBtn = document.getElementById('closeModalBtn');
-            const cancelBtn = document.getElementById('cancelScanBtn');
-            const switchBtn = document.getElementById('switchCameraBtn');
+        // ==================== دوال الجدول ====================
+        function checkSerialDuplicate(serialInputElement, serialValue) {
+            if (!serialValue || serialValue.trim() === '') return false;
             
-            if (closeBtn) closeBtn.onclick = closeScannerModal;
-            if (cancelBtn) cancelBtn.onclick = closeScannerModal;
-            if (switchBtn) switchBtn.onclick = switchCamera;
+            const allSerialInputs = document.querySelectorAll('#tableBody .serial-input');
+            let isDuplicate = false;
             
-            window.addEventListener('click', (e) => {
-                const modal = document.getElementById('cameraModal');
-                if (e.target === modal) closeScannerModal();
+            allSerialInputs.forEach(input => {
+                if (input !== serialInputElement && input.value.trim() === serialValue.trim()) {
+                    isDuplicate = true;
+                }
+            });
+            
+            if (isDuplicate) {
+                serialInputElement.classList.add('serial-input-duplicate');
+                alert(`⚠️ الرقم التسلسلي "${serialValue}" موجود مسبقاً في هذا الوصل!`);
+            } else {
+                serialInputElement.classList.remove('serial-input-duplicate');
+            }
+            
+            return isDuplicate;
+        }
+
+        function getNextNumber() {
+            const allNumInputs = document.querySelectorAll('#tableBody .num-input');
+            let maxNum = 0;
+            allNumInputs.forEach(inp => {
+                let val = parseInt(inp.value, 10);
+                if (!isNaN(val) && val > maxNum) maxNum = val;
+            });
+            return maxNum + 1;
+        }
+
+        function createSerialCellWithScanner(currentValue = '') {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'serial-wrapper';
+            
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'serial-input';
+            input.placeholder = ' ';
+            input.value = currentValue || '';
+            
+            const placeholder = document.createElement('span');
+            placeholder.className = 'serial-placeholder';
+            placeholder.textContent = '---- ---- ---- ----';
+            
+            input.addEventListener('change', function() {
+                checkSerialDuplicate(this, this.value);
+                syncValuesToAttributes();
+                autoSave();
+                if (this.value && this.value.trim() !== '') {
+                    placeholder.style.display = 'none';
+                } else {
+                    placeholder.style.display = 'block';
+                }
+            });
+            input.addEventListener('keyup', function() {
+                if (!this.value || this.value.trim() === '') {
+                    this.classList.remove('serial-input-duplicate');
+                    placeholder.style.display = 'block';
+                } else {
+                    checkSerialDuplicate(this, this.value);
+                    placeholder.style.display = 'none';
+                }
+                syncValuesToAttributes();
+                autoSave();
+            });
+            input.addEventListener('focus', function() {
+                placeholder.style.display = 'none';
+            });
+            input.addEventListener('blur', function() {
+                if (!this.value || this.value.trim() === '') {
+                    placeholder.style.display = 'block';
+                }
+            });
+            
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'barcode-btn';
+            btn.innerHTML = '📷';
+            btn.title = 'مسح الرمز التسلسلي';
+            
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                currentActiveInput = input;
+                openScannerModal();
+            });
+            
+            wrapper.appendChild(input);
+            wrapper.appendChild(placeholder);
+            wrapper.appendChild(btn);
+            return { wrapper, input, btn, placeholder };
+        }
+
+        function deleteRow(button) {
+            const row = button.closest('tr');
+            const rows = tableBody.querySelectorAll('tr');
+            if (rows.length <= 1) {
+                alert('⚠️ لا يمكن حذف الصف الأخير! يجب أن يبقى صف واحد على الأقل.');
+                return;
+            }
+            if (confirm('هل أنت متأكد من حذف هذا الجهاز؟')) {
+                row.remove();
+                const numInputs = document.querySelectorAll('#tableBody .num-input');
+                numInputs.forEach((inp, index) => {
+                    inp.value = index + 1;
+                });
+                syncValuesToAttributes();
+                autoSave();
+            }
+        }
+
+        function addNewRow() {
+            const newRow = document.createElement('tr');
+            
+            const tdNum = document.createElement('td');
+            const numInput = document.createElement('input');
+            numInput.type = 'text';
+            numInput.className = 'num-input';
+            numInput.placeholder = '#';
+            numInput.value = getNextNumber().toString();
+            tdNum.appendChild(numInput);
+            
+            const tdUnit = document.createElement('td');
+            const unitInput = document.createElement('input');
+            unitInput.type = 'text';
+            unitInput.className = 'unit-input';
+            unitInput.placeholder = 'العدد';
+            unitInput.value = '1';
+            tdUnit.appendChild(unitInput);
+            
+            const tdSerial = document.createElement('td');
+            const { wrapper, input: serialInput, btn, placeholder } = createSerialCellWithScanner('');
+            tdSerial.appendChild(wrapper);
+            
+            const tdType = document.createElement('td');
+            const typeInput = document.createElement('input');
+            typeInput.className = 'type-input';
+            typeInput.placeholder = 'نوع الجهاز';
+            tdType.appendChild(typeInput);
+            
+            const tdNature = document.createElement('td');
+            const natureInput = document.createElement('input');
+            natureInput.className = 'nature-input';
+            natureInput.placeholder = 'طبيعة الجهاز';
+            tdNature.appendChild(natureInput);
+            
+            const tdDestination = document.createElement('td');
+            const destinationInput = document.createElement('input');
+            destinationInput.className = 'destination-input';
+            destinationInput.placeholder = 'الوجهة';
+            tdDestination.appendChild(destinationInput);
+            
+            const tdDelete = document.createElement('td');
+            tdDelete.className = 'hide-print';
+            const deleteBtn = document.createElement('button');
+            deleteBtn.type = 'button';
+            deleteBtn.className = 'delete-row-btn';
+            deleteBtn.innerHTML = '✕';
+            deleteBtn.title = 'حذف الجهاز';
+            deleteBtn.addEventListener('click', function() {
+                deleteRow(this);
+            });
+            tdDelete.appendChild(deleteBtn);
+            
+            newRow.appendChild(tdNum);
+            newRow.appendChild(tdUnit);
+            newRow.appendChild(tdSerial);
+            newRow.appendChild(tdType);
+            newRow.appendChild(tdNature);
+            newRow.appendChild(tdDestination);
+            newRow.appendChild(tdDelete);
+            
+            tableBody.appendChild(newRow);
+            
+            const inputs = newRow.querySelectorAll('input');
+            inputs.forEach(inp => {
+                inp.addEventListener('change', () => { syncValuesToAttributes(); autoSave(); });
+                inp.addEventListener('keyup', () => { syncValuesToAttributes(); autoSave(); });
+            });
+            
+            const barcodeBtn = newRow.querySelector('.barcode-btn');
+            if (barcodeBtn) {
+                barcodeBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    currentActiveInput = newRow.querySelector('.serial-input');
+                    openScannerModal();
+                });
+            }
+            
+            syncValuesToAttributes();
+            autoSave();
+        }
+
+        function updateSerialNumbers() {
+            const numInputs = document.querySelectorAll('#tableBody .num-input');
+            numInputs.forEach((inp, index) => {
+                if (!inp.value || inp.value === '') {
+                    inp.value = index + 1;
+                }
             });
         }
 
-        // ==================== دوال المزامنة والتصوير ====================
+        // ==================== دوال المزامنة والمعاينة ====================
         function syncValuesToAttributes() {
             const allTableInputs = document.querySelectorAll('#devicesTable input');
             allTableInputs.forEach(inp => inp.setAttribute('value', inp.value));
@@ -703,12 +1357,10 @@
             }
             const topDate = document.getElementById('topDateInput');
             if (topDate) topDate.setAttribute('value', topDate.value);
-            const receiverName = document.getElementById('receiverName');
-            const receiverDept = document.getElementById('receiverDept');
-            const receiverSignature = document.getElementById('receiverSignature');
-            if (receiverName) receiverName.setAttribute('value', receiverName.value);
-            if (receiverDept) receiverDept.setAttribute('value', receiverDept.value);
-            if (receiverSignature) receiverSignature.setAttribute('value', receiverSignature.value);
+            ['receiverName','receiverDept','receiverSignature'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.setAttribute('value', el.value);
+            });
         }
 
         function autoResizeTextarea(textarea) {
@@ -721,8 +1373,50 @@
             syncValuesToAttributes();
             const textarea = document.getElementById('fullReceiptText');
             if (textarea) autoResizeTextarea(textarea);
+            document.querySelectorAll('.hide-print').forEach(el => el.classList.add('print-hide'));
+            document.querySelectorAll('.serial-placeholder').forEach(el => {
+                el.style.display = 'none';
+            });
+            document.querySelector('.report-page').classList.add('print-mode');
         }
 
+        function restoreAfterCapture() {
+            document.querySelectorAll('.hide-print').forEach(el => el.classList.remove('print-hide'));
+            document.querySelectorAll('.serial-wrapper').forEach(wrapper => {
+                const input = wrapper.querySelector('.serial-input');
+                const placeholder = wrapper.querySelector('.serial-placeholder');
+                if (placeholder && (!input.value || input.value.trim() === '')) {
+                    placeholder.style.display = 'block';
+                }
+            });
+            document.querySelector('.report-page').classList.remove('print-mode');
+        }
+
+        // ==================== معاينة الصورة ====================
+        function showPreview(canvas) {
+            previewCanvasData = canvas;
+            const previewImg = document.getElementById('previewImage');
+            previewImg.src = canvas.toDataURL('image/png');
+            document.getElementById('previewModal').style.display = 'flex';
+        }
+
+        function closePreview() {
+            document.getElementById('previewModal').style.display = 'none';
+            previewCanvasData = null;
+        }
+
+        function downloadImage() {
+            if (!previewCanvasData) return;
+            const link = document.createElement('a');
+            const dateStr = new Date().toISOString().slice(0,10);
+            link.download = `وصل_استلام_${dateStr}.png`;
+            link.href = previewCanvasData.toDataURL('image/png');
+            link.click();
+            closePreview();
+            restoreAfterCapture();
+        }
+
+        // ==================== دوال التصوير ====================
         window.downloadReportImage = function() {
             if (!reportElement) { alert("خطأ"); return; }
             const btn = document.getElementById('saveImageBtn');
@@ -751,22 +1445,98 @@
                             const cloned = clonedDoc.getElementById(id);
                             if (orig && cloned) cloned.value = orig.value;
                         });
+                        clonedDoc.querySelectorAll('.hide-print').forEach(el => el.classList.add('print-hide'));
+                        clonedDoc.querySelectorAll('.serial-placeholder').forEach(el => {
+                            el.style.display = 'none';
+                        });
+                        clonedDoc.querySelectorAll('.barcode-btn').forEach(el => {
+                            el.style.display = 'none';
+                        });
+                        clonedDoc.querySelectorAll('.add-row-btn, .btn-wrapper').forEach(el => {
+                            el.style.display = 'none';
+                        });
+                        clonedDoc.querySelectorAll('.devices-table td input').forEach(inp => {
+                            inp.setAttribute('placeholder', ' ');
+                        });
                     }
                 }).then(canvas => {
-                    const link = document.createElement('a');
-                    const dateStr = new Date().toISOString().slice(0,10);
-                    link.download = `وصل_استلام_${dateStr}.png`;
-                    link.href = canvas.toDataURL('image/png');
-                    link.click();
                     if (btn) { btn.innerText = originalText; btn.disabled = false; }
-                }).catch(() => { alert("خطأ"); if(btn){ btn.innerText = originalText; btn.disabled = false; } });
+                    showPreview(canvas);
+                }).catch(() => { 
+                    alert("خطأ في إنشاء الصورة"); 
+                    if(btn){ btn.innerText = originalText; btn.disabled = false; }
+                    restoreAfterCapture();
+                });
             }, 150);
         };
 
         window.printReport = function() {
             prepareForCapture();
-            setTimeout(() => window.print(), 120);
+            setTimeout(() => {
+                window.print();
+                restoreAfterCapture();
+            }, 200);
         };
+
+        // ==================== السندات المحفوظة ====================
+        function showSavedReceipts() {
+            const receipts = getSavedReceipts();
+            const container = document.getElementById('savedListContainer');
+            
+            if (receipts.length === 0) {
+                container.innerHTML = '<div class="no-saved">📭 لا توجد سندات محفوظة</div>';
+            } else {
+                let html = '';
+                receipts.sort((a, b) => (b.number || 0) - (a.number || 0));
+                receipts.forEach((receipt, index) => {
+                    const deviceCount = receipt.devices ? receipt.devices.length : 0;
+                    const dateStr = receipt.date || 'بدون تاريخ';
+                    html += `
+                        <div class="saved-item" data-index="${index}">
+                            <div class="saved-item-info">
+                                <span class="saved-item-number">سند #${receipt.number || '?'}</span>
+                                <span class="saved-item-date">📅 ${dateStr}</span>
+                                <span class="saved-item-count">📱 ${deviceCount} أجهزة</span>
+                                ${receipt.receiverName ? `<span style="font-size:12px;color:#4a627a;">👤 ${receipt.receiverName}</span>` : ''}
+                            </div>
+                            <div>
+                                <button class="saved-item-delete" data-id="${receipt.id}" title="حذف السند">🗑️</button>
+                            </div>
+                        </div>
+                    `;
+                });
+                container.innerHTML = html;
+                
+                container.querySelectorAll('.saved-item').forEach(item => {
+                    const index = parseInt(item.dataset.index);
+                    item.addEventListener('click', (e) => {
+                        if (e.target.classList.contains('saved-item-delete')) return;
+                        const receiptsData = getSavedReceipts();
+                        if (receiptsData[index]) {
+                            document.getElementById('savedModal').style.display = 'none';
+                            loadReceipt(receiptsData[index]);
+                        }
+                    });
+                });
+                
+                container.querySelectorAll('.saved-item-delete').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const id = btn.dataset.id;
+                        if (confirm('هل أنت متأكد من حذف هذا السند؟')) {
+                            let receiptsData = getSavedReceipts();
+                            receiptsData = receiptsData.filter(r => r.id !== id);
+                            saveReceipts(receiptsData);
+                            showSavedReceipts();
+                            if (currentReceiptId === id) {
+                                currentReceiptId = null;
+                            }
+                        }
+                    });
+                });
+            }
+            document.getElementById('savedModal').style.display = 'flex';
+        }
 
         // ==================== ربط الأزرار ====================
         const saveBtn = document.getElementById('saveImageBtn');
@@ -775,16 +1545,43 @@
             saveBtn.parentNode.replaceChild(newSave, saveBtn);
             newSave.addEventListener('click', (e) => { e.preventDefault(); window.downloadReportImage(); });
         }
+        
         const printBtn = document.getElementById('printBtn');
         if (printBtn) {
             const newPrint = printBtn.cloneNode(true);
             printBtn.parentNode.replaceChild(newPrint, printBtn);
             newPrint.addEventListener('click', (e) => { e.preventDefault(); window.printReport(); });
         }
+        
+        const savedBtn = document.getElementById('savedBtn');
+        if (savedBtn) {
+            const newSaved = savedBtn.cloneNode(true);
+            savedBtn.parentNode.replaceChild(newSaved, savedBtn);
+            newSaved.addEventListener('click', (e) => { e.preventDefault(); showSavedReceipts(); });
+        }
+        
+        document.getElementById('closeSavedModalBtn').addEventListener('click', () => {
+            document.getElementById('savedModal').style.display = 'none';
+        });
+        window.addEventListener('click', (e) => {
+            const modal = document.getElementById('savedModal');
+            if (e.target === modal) modal.style.display = 'none';
+        });
+        
+        document.getElementById('closePreviewBtn').addEventListener('click', () => {
+            closePreview();
+            restoreAfterCapture();
+        });
+        document.getElementById('cancelPreviewBtn').addEventListener('click', () => {
+            closePreview();
+            restoreAfterCapture();
+        });
+        document.getElementById('confirmDownloadBtn').addEventListener('click', downloadImage);
+        
         if (addRowBtn) addRowBtn.addEventListener('click', addNewRow);
         
-        // دالة لربط جميع أزرار الكاميرا
-        function bindAllCameraButtons() {
+        // ==================== ربط أزرار الجدول ====================
+        function bindAllButtons() {
             const allWrappers = document.querySelectorAll('#tableBody .serial-wrapper');
             allWrappers.forEach(wrapper => {
                 const btn = wrapper.querySelector('.barcode-btn');
@@ -799,23 +1596,45 @@
                         currentActiveInput = inp;
                         openScannerModal();
                     });
-                    if (wrapper.querySelector('.barcode-btn')) {
-                        wrapper.querySelector('.barcode-btn').setAttribute('data-scanner-bound', 'true');
-                    }
+                }
+            });
+            
+            const deleteBtns = document.querySelectorAll('#tableBody .delete-row-btn');
+            deleteBtns.forEach(btn => {
+                if (!btn.hasAttribute('data-delete-bound')) {
+                    btn.setAttribute('data-delete-bound', 'true');
+                    const newBtn = btn.cloneNode(true);
+                    btn.parentNode.replaceChild(newBtn, btn);
+                    newBtn.addEventListener('click', function() {
+                        deleteRow(this);
+                    });
                 }
             });
         }
         
-        // ربط أزرار الصف الأول
-        bindAllCameraButtons();
+        bindAllButtons();
         
-        // مراقبة التغييرات في الجدول
         const observer = new MutationObserver(() => {
-            bindAllCameraButtons();
+            bindAllButtons();
             syncValuesToAttributes();
         });
         observer.observe(tableBody, { childList: true, subtree: true });
         
+        // ==================== أحداث الإدخال ====================
+        function bindModalEvents() {
+            const closeBtn = document.getElementById('closeModalBtn');
+            const cancelBtn = document.getElementById('cancelScanBtn');
+            const switchBtn = document.getElementById('switchCameraBtn');
+            
+            if (closeBtn) closeBtn.onclick = closeScannerModal;
+            if (cancelBtn) cancelBtn.onclick = closeScannerModal;
+            if (switchBtn) switchBtn.onclick = switchCamera;
+            
+            window.addEventListener('click', (e) => {
+                const modal = document.getElementById('cameraModal');
+                if (e.target === modal) closeScannerModal();
+            });
+        }
         bindModalEvents();
         
         const fullTextarea = document.getElementById('fullReceiptText');
@@ -823,20 +1642,24 @@
             fullTextarea.addEventListener('input', function() {
                 autoResizeTextarea(this);
                 syncValuesToAttributes();
+                autoSave();
             });
             autoResizeTextarea(fullTextarea);
         }
         
-        if (topDateInput) {
-            topDateInput.addEventListener('change', syncValuesToAttributes);
-            topDateInput.addEventListener('keyup', syncValuesToAttributes);
-        }
+        ['topDateInput', 'receiverName', 'receiverDept', 'receiverSignature'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.addEventListener('change', () => { syncValuesToAttributes(); autoSave(); });
+                el.addEventListener('keyup', () => { syncValuesToAttributes(); autoSave(); });
+            }
+        });
         
-        // التحقق من تكرار الرقم التسلسلي للصف الأول
         const firstSerialInput = document.querySelector('#tableBody .serial-input');
         if (firstSerialInput) {
             firstSerialInput.addEventListener('change', function() {
                 checkSerialDuplicate(this, this.value);
+                autoSave();
             });
             firstSerialInput.addEventListener('keyup', function() {
                 if (!this.value || this.value.trim() === '') {
@@ -844,9 +1667,12 @@
                 } else {
                     checkSerialDuplicate(this, this.value);
                 }
+                autoSave();
             });
         }
         
+        // ==================== تهيئة الصفحة ====================
+        setCurrentDate();
         syncValuesToAttributes();
         
         window.addEventListener('beforeunload', () => {
